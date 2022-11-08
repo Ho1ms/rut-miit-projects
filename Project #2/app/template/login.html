@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="icon" href="{{url_for('static', filename='favicon.ico')}}" type="image/ico">
+    <title>Дом.РФ Админ панель</title>
+
+
+    <meta name="theme-color" content="#712cf9">
+    <meta property="og:title" content="Дом.РФ | Админ Панель">
+    <meta property="og:description" content="Панель администрирования систем телеграмм бота для Дом.РФ от студентов РУТ (МИИТ)">
+    <meta property="og:site_name" content="Дом.РФ">
+    <meta property="og:image" content="{{url_for('static', filename='Logo.jpg')}}">
+    <link href="https://getbootstrap.com/docs/5.2/examples/sign-in/signin.css" rel="stylesheet">
+    <link rel="canonical" href="https://getbootstrap.com/docs/5.2/examples/sign-in/">
+    <link href="https://getbootstrap.com/docs/5.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+
+</head>
+<body class="text-center">
+    <main class="form-signin w-100 m-auto">
+        <form>
+            <img class="mb-4" src="{{url_for('static', filename='Logo.jpg')}}" alt="" width="72" height="57">
+            <h1 class="h3 mb-3 fw-normal">Авторизация в панель управления телеграмм ботом</h1>
+
+
+            <script async src="https://telegram.org/js/telegram-widget.js?21" data-telegram-login="house_rf_bot" data-size="large" data-auth-url="{{url}}" data-request-access="write"></script>
+            <p class="mt-5 mb-3 text-muted">© Holms 2020 – 2022</p>
+        </form>
+    </main>
+
+</body>
+</html>
+

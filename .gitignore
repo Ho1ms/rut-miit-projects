@@ -1,0 +1,12 @@
+
+*.xml
+*.pyc
+*.svg
+
+*.css
+Project \#2/app/static/icons/bootstrap-icons.json
+Project \#2/app/static/icons/bootstrap-icons.scss
+Project \#2/app/static/icons/fonts/bootstrap-icons.woff
+Project \#2/app/static/icons/fonts/bootstrap-icons.woff2
+*.iml
+Project \#2/app/config.py
