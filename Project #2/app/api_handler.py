@@ -17,38 +17,39 @@ def get_form():
     print('1234')
     sql, db = create_conn()
     names = ['id','user_id','name', 'surname', 'father_name',
-             'city','years','date','direction','email','cover_letter', 'resume']
+             'city','years','date','direction','email','cover_letter', 'resume', 'university','education']
 
     sql.execute(f"""SELECT f.id, user_id, f.name, surname, 
-    father_name, c.name, CAST(extract(years from age(now(), birthday_date)) as int) as years, to_char(birthday_date, 'dd.mm.YYYY') as date, d.name, email, cover_letter, resume
+    father_name, c.name, CAST(extract(years from age(now(), birthday_date)) as int) as years,
+     to_char(birthday_date, 'dd.mm.YYYY') as date, d.name, email, cover_letter, resume, university, format('%s %s',b.code , b.title)
     FROM forms as f 
     INNER JOIN directions as d ON f.direction_id = d.id 
     INNER JOIN cities as c ON c.id = f.city_id 
+    INNER JOIN profession_codes as b ON b.id = f.profession_id 
     WHERE f.id = {id}""")
-    row = sql.fetchone()
-    data = {key:row[i] for i, key in enumerate(names)}
+    row = sql.fetchone() or []
+    data = {key:row[i] if i < len(row) else None for i, key in enumerate(names)}
     db.close()
     return json.dumps(data, ensure_ascii=False),200
 
+get_tables = {
+    'directions':['id','name'],
+    'cities':['id','name'],
+    'professional_codes':['id','code','title']
+}
 
-@app.route('/api/get-directions', endpoint='get_directions')
+@app.route('/api/get-<table>', endpoint='get_directions')
 @access([1,2])
-def get_directions():
+def get_table(table):
+    if table not in get_tables:
+        return {'message':'Unknown table','resultCode':2},200
+
     sql, db = create_conn()
-    sql.execute(f"""SELECT id, name FROM directions""")
+    sql.execute(f"""SELECT {', '.join(get_tables[table])} FROM {table}""")
     rows = sql.fetchall()
     db.close()
     return json.dumps({'data': rows}, ensure_ascii=False),200
 
-
-@app.route('/api/get-cities', endpoint='get_cities')
-@access([1,2])
-def get_cities():
-    sql, db = create_conn()
-    sql.execute(f"""SELECT id, name FROM cities""")
-    rows = sql.fetchall()
-    db.close()
-    return json.dumps({'data': rows}, ensure_ascii=False),200
 
 
 @app.route('/api/form-handler', methods=('POST',), endpoint='form_handler')
@@ -57,7 +58,7 @@ def form_handler():
     data = request.json
     sql, db = create_conn()
     data['birthday_date'] = datetime.datetime.strptime(data['birthday_date'], '%d.%m.%Y').strftime('%Y-%m-%d')
-    names = ['user_id','name', 'surname', 'father_name', 'city_id','birthday_date','direction_id','email','cover_letter', 'resume']
+    names = ['user_id','name', 'surname', 'father_name', 'city_id','birthday_date','direction_id','email','cover_letter', 'resume', 'university','profession_id']
     sql.execute(f"""INSERT INTO forms ({", ".join(names)}) 
     VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id""",(*[data.get(i) for i in names],))
 
