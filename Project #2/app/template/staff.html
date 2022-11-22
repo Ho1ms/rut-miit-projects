@@ -1,0 +1,69 @@
+{% extends 'template.html' %}
+
+{% block content %}
+ <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+
+      <div class="justify-content-between flex-wrap flex-md-nowrap  pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Список сотрудников:</h1>
+          <form method="GET">
+            <div class="input-group my-4" style="max-width:500px">
+
+                <input type="text" name="search" class="form-control" placeholder="Найти пользователя" aria-label="Запрос" aria-describedby="button-addon2">
+                <button class="btn btn-outline-primary" type="submit" id="button-addon2">Поиск</button>
+            </div>
+        </form>
+          {% for member in users %}
+          <div class="d-flex text-muted pt-3" id="{{member[0]}}" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+              <img src="{{member[4]}}" width="64" height="64" class="m-1" style="border-radius:50%;object-fit: cover;">
+                        <div class="pb-3 mb-0 small lh-sm border-bottom w-100 my-auto ms-2">
+                            <div class="d-flex justify-content-between">
+                                <strong class="text-gray-dark h6">@{{member[1]}}</strong>
+                            </div>
+                        <span class="d-block">{{member[2]}} {{member[3] or ''}} ({{roles[member[5]]}})</span>
+                        <p hidden>{"first_name":"{{member[2]}}","last_name":"{{member[3]}}","role":{{member[5]}}}</p>
+                        </div>
+                    </div>
+          {% endfor %}
+      </div>
+ </main>
+    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog">
+      <form method="post">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="labelForm">Изменение пользователя</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+          <input type="text" name="id" hidden id="id">
+        <div class="mb-3">
+          <label for="first_name" class="form-label">Имя</label>
+          <input class="form-control" id="first_name" name="first_name" type="text">
+        </div>
+        <hr>
+        <div class="mb-3">
+          <label for="last_name" class="form-label">Фамилия</label>
+          <input class="form-control" name="last_name" id="last_name" type="text">
+        </div>
+        <hr>
+          <div class="mb-3">
+          <label for="role" class="form-label">Должность</label>
+          <select class="form-select form-select-lg mb-3" name="role" id="role">
+                {% for role in roles %}
+                    <option value="{{role}}">{{roles[role]}}</option>
+                {% endfor %}
+        </select>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary" name="save-user">Сохранить</button>
+      </div>
+
+    </div>
+          </form>
+  </div>
+</div>
+<script src="{{url_for('static', filename='js/staff.js')}}"></script>
+{% endblock %}
+
