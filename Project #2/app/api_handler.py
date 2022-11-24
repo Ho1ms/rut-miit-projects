@@ -6,9 +6,18 @@ from .database import create_conn
 from flask import request, url_for
 
 
+@app.route('/api/add-use-<int:user_id>', endpoint='add_form')
+@access([1,2])
+def add_form(user_id):
+    sql, db = create_conn()
+    sql.execute(f'INSERT INTO bot_uses (user_id) VALUES ({user_id}) ON CONFLICT DO NOTHING')
+    db.commit()
+    db.close()
+    return {'message':'success'},200
+
 
 @app.route('/api/get-form', endpoint='get_form')
-@access([1,2,6])
+@access([1,2])
 def get_form():
     id = request.args.get('id')
     print(id)
@@ -79,6 +88,7 @@ def form_handler():
         'type': row[4]
     }
     socketio.emit('add-form',body)
+
     notify_body = {
         'title':'Новая анкета!',
         'description':f'Анкета от {data["name"]} {data["surname"]}',
@@ -86,11 +96,13 @@ def form_handler():
     }
     socketio.emit('notify',notify_body)
 
-    return {'message':'success'},200
+    return {'data': body},200
 
-@app.route('/api/get-start-message', endpoint='get_start_message')
+@app.route('/api/get-<type>-message', endpoint='get_start_message')
 @access([1,2])
-def get_start_message():
+def get_start_message(type):
+    if type not in ('faq','start','contact'):
+        return 'Unknown type',404
     sql, db = create_conn()
     sql.execute('SELECT description, attachment FROM messages LIMIT 1')
     row = sql.fetchone()

@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS forms (
     email VARCHAR(256),
     cover_letter VARCHAR(2048),
     resume varchar(256),
+    status VARCHAR(32) DEFAULT 'new',
     FOREIGN KEY (city_id) REFERENCES cities(id),
     FOREIGN KEY (direction_id) REFERENCES directions(id)
 );
@@ -85,3 +86,9 @@ INSERT INTO users (id, username,first_name, last_name, hash, photo_code, role_id
     (1469793383, 'halisl', 'Данила','Гинда', 'hash_to_update', 'P9vhtP8sHGpmM_TRgpQdYWYuQCv5ZUSN10s0EvMIkKY', 1),
     (5663523522, 'house_rf_bot', 'Технический','Аккаунт', '69676bc6c46eaec7d943482f77fa73e6fba22015a897192376c45f7e3fcec41f', '', 5)
     ON CONFLICT  DO NOTHING ;
+
+CREATE TABLE IF NOT EXISTS bot_uses (
+    user_id BIGINT PRIMARY KEY,
+    date TIMESTAMP DEFAULT CURRENT_DATE
+)
+

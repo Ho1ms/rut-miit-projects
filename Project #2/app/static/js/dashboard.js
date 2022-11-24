@@ -25,8 +25,10 @@ window.onload = () => {
         $('labelForm').innerText = `Анекта №${data.id}`
         $('contacts').innerText = `Email: ${data.email}`
         $('cover_letter').innerText = data.cover_letter
+        $('form_id').value = data.id
         $('resume').src = window.location.origin + '/static/img/resume/' + `${data.resume}`
         $('resume_url').href = window.location.origin + '/static/img/resume/' + `${data.resume}`
+
     }
 
     const modalForm = document.getElementById('staticBackdrop')
@@ -46,7 +48,6 @@ window.onload = () => {
 
             }
         }
-        // console.log(button.id)
     })
     modalForm.addEventListener('hide.bs.modal', event => {
         $('name').innerText = ''
@@ -58,6 +59,7 @@ window.onload = () => {
         $('cover_letter').innerText = ''
         $('resume').src = ''
         $('resume_url').href = ''
+        $('form_id').value = ''
     })
 
 
@@ -72,25 +74,9 @@ window.onload = () => {
     var myChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: [
-                'Понедельник',
-                'Вторник',
-                'Среда',
-                'Четверг',
-                'Пятница',
-                'Суббота',
-                'Воскресенье'
-            ],
+            labels: dates_titles,
             datasets: [{
-                data: [
-                    getRandomInt(100, 500),
-                    getRandomInt(300, 800),
-                    getRandomInt(50, 200),
-                    getRandomInt(200, 400),
-                    getRandomInt(350, 600),
-                    getRandomInt(200, 800),
-                    getRandomInt(200, 800)
-                ],
+                data: dates_info,
                 lineTension: 0,
                 backgroundColor: 'transparent',
                 borderColor: '#007bff',

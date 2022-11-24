@@ -22,7 +22,7 @@ def tech():
         if data.get('act-save-start') or data.get('act-save-contact') or data.get('act-save-faq'):
             sql.execute(f"UPDATE buttons SET title=%s, answer=%s WHERE id = %s",(data.get('title'), data.get('answer'), data.get('id')))
         elif data.get('act-del-faq') and int(data.get('id')) > 2:
-            sql.execute("DELETE FROM buttons WHERE id=%s AND type='faq'",(data.get('id')))
+            sql.execute("DELETE FROM buttons WHERE id=%s AND type='faq'",(data.get('id'),))
         elif data.get('act-add-faq'):
             sql.execute("INSERT INTO buttons (type, title, answer) VALUES ('faq',%s,%s)",(data.get('title'),data.get('answer')))
         else:
