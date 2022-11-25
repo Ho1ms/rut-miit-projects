@@ -36,6 +36,7 @@ def tech():
             sql.execute("DELETE FROM buttons WHERE id=%s AND type='faq'",(data.get('id'),))
         elif data.get('act-add-faq'):
             file = request.files.get('file')
+            filename = ''
             if file:
                 filename = genCode(8) + '.jpg'
                 file.save(join('app', 'static', 'message', filename))

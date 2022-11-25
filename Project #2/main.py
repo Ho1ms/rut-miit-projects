@@ -3,7 +3,7 @@ import requests
 from os.path import join
 from aiogram import Bot, types,Dispatcher
 from app.config import TOKEN, host, cookies
-from aiogram.types import ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup, FSInputFile
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, KeyboardButton,InlineKeyboardBuilder
 
 bot = Bot(token=TOKEN, parse_mode="HTML")
@@ -49,10 +49,7 @@ get_messages()
 
 
 def get_static(file_name:str) -> str:
-    f = open(join(os.getcwd(), 'app', 'static', 'message', file_name), 'rb')
-    data = f.read()
-    f.close()
-    return data
+    return FSInputFile(path=join(os.getcwd(), 'app', 'static', 'message', file_name))
 
 
 @dp.message(commands=['refresh_buttons'])
@@ -74,6 +71,7 @@ async def refresh_buttons(message: types.Message):
 async def process_start_command(message: types.Message):
 
     text = START_MESSAGE.get('text')
+
     if START_MESSAGE.get('attachment'):
         await bot.send_photo(
             chat_id=message.from_user.id,
@@ -93,37 +91,74 @@ async def process_start_command(message: types.Message):
 @dp.message(lambda message: CONTACT_MESSAGE.get('title') == message.text)
 async def contact_handler(message: types.Message):
 
-    await bot.send_message(
-        chat_id=message.from_user.id,
-        text=CONTACT_MESSAGE.get('text')
-    )
+    text = CONTACT_MESSAGE.get('text')
+
+    if CONTACT_MESSAGE.get('attachment'):
+        await bot.send_photo(
+            chat_id=message.from_user.id,
+            photo=get_static(CONTACT_MESSAGE.get('attachment')),
+            caption=text
+        )
+    else:
+        await bot.send_message(
+            chat_id=message.from_user.id,
+            text=text
+        )
 
 
 @dp.message(lambda message: FORM_MESSAGE.get('title') == message.text)
 async def form_handler(message: types.Message):
 
-    await bot.send_message(
-        chat_id=message.from_user.id,
-        text=FORM_MESSAGE.get('text')
-    )
+    text = FORM_MESSAGE.get('text')
+
+    if FORM_MESSAGE.get('attachment'):
+        await bot.send_photo(
+            chat_id=message.from_user.id,
+            photo=get_static(FORM_MESSAGE.get('attachment')),
+            caption=text
+        )
+    else:
+        await bot.send_message(
+            chat_id=message.from_user.id,
+            text=text
+        )
 
 
 @dp.message(lambda message: FAQ_MESSAGE.get('title') == message.text)
 async def faq_main_handler(message: types.Message):
 
-    await bot.send_message(
-        chat_id=message.from_user.id,
-        text=FAQ_MESSAGE.get('text'),
-        reply_markup=FAQ_MARKUP
-    )
+    text = FAQ_MESSAGE.get('text')
+
+    if FAQ_MESSAGE.get('attachment'):
+        await bot.send_photo(
+            chat_id=message.from_user.id,
+            photo=get_static(FAQ_MESSAGE.get('attachment')),
+            caption=text,
+            reply_markup=FAQ_MARKUP
+        )
+    else:
+        await bot.send_message(
+            chat_id=message.from_user.id,
+            text=text,
+            reply_markup=FAQ_MARKUP
+        )
 
 @dp.message(lambda message: TICKET_MESSAGE.get('title') == message.text)
 async def ticket_handler(message: types.Message):
 
-    await bot.send_message(
-        chat_id=message.from_user.id,
-        text=TICKET_MESSAGE.get('text')
-    )
+    text = TICKET_MESSAGE.get('text')
+
+    if TICKET_MESSAGE.get('attachment'):
+        await bot.send_photo(
+            chat_id=message.from_user.id,
+            photo=get_static(TICKET_MESSAGE.get('attachment')),
+            caption=text
+        )
+    else:
+        await bot.send_message(
+            chat_id=message.from_user.id,
+            text=text
+        )
 
 @dp.callback_query(lambda call: call.data and call.data.isdigit() and int(call.data) < len(FAQ_MESSAGES))
 async def faq_handler(call: types.Message):
