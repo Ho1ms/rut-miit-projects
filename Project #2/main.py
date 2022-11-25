@@ -9,11 +9,11 @@ from aiogram.utils.keyboard import ReplyKeyboardBuilder, KeyboardButton,InlineKe
 bot = Bot(token=TOKEN, parse_mode="HTML")
 dp = Dispatcher()
 
-START_MESSAGE = CONTACT_MESSAGE = FAQ_MESSAGE = FAQ_MESSAGES = MAIN_MARKUP = FORM_MESSAGE = TICKET_MESSAGE = FAQ_TITLES = {}
+START_MESSAGE = CONTACT_MESSAGE = FAQ_MESSAGE = FAQ_MESSAGES = MAIN_MARKUP = FORM_MESSAGE = TICKET_MESSAGE = {}
 
 
 def get_messages():
-    global START_MESSAGE, CONTACT_MESSAGE, FAQ_MESSAGE, FAQ_MARKUP, FAQ_MESSAGES, MAIN_MARKUP, FORM_MESSAGE, TICKET_MESSAGE, FAQ_TITLES
+    global START_MESSAGE, CONTACT_MESSAGE, FAQ_MESSAGE, FAQ_MARKUP, FAQ_MESSAGES, MAIN_MARKUP, FORM_MESSAGE, TICKET_MESSAGE
 
     START_MESSAGE = requests.get(f'{host}api/get-start-message', cookies=cookies).json()
     FORM_MESSAGE = requests.get(f'{host}api/get-form-message', cookies=cookies).json()
@@ -125,7 +125,7 @@ async def ticket_handler(message: types.Message):
         text=TICKET_MESSAGE.get('text')
     )
 
-@dp.callback_query(lambda call: call.data and call.data.isdigit() and int(call.data) < len(FAQ_TITLES))
+@dp.callback_query(lambda call: call.data and call.data.isdigit() and int(call.data) < len(FAQ_MESSAGES))
 async def faq_handler(call: types.Message):
 
     data = FAQ_MESSAGES[int(call.data)]
