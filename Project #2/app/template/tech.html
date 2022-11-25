@@ -9,41 +9,101 @@
       </div>
     <div class="justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h4 class="h4">Стартовое сообщение:</h4>
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
             <input hidden name="id" value="{{start_message[0]}}">
 
             <input class="form-control" type="text" style="width: 100%; margin-bottom: 10px" name="title" value="{{start_message[2]}}">
             <textarea class="form-control" rows="5" style="width: 100%; height: 200px; margin-bottom: 10px" name="answer">{{start_message[3]}}</textarea>
+            {% if start_message[4] %}
+                <img src="{{ url_for('static', filename='message/'+start_message[4]) }}" class="card-img-bottom" style="width:100%;max-height:600px; object-fit: cover; object-position: 50% 50%;" alt>
+            {% endif %}
+            <input type='checkbox' class="form-check-input" name='img_edit'> Заменить изображение
+            <input class="form-control my-3" name='file' type="file">
             <button class="btn btn-primary" name="act-save-start"  value="1">Сохранить</button>
         </form>
       </div>
     <div class="justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h4 class="h4">Тикеты:</h4>
+        <form method="post" enctype="multipart/form-data">
+            <input hidden name="id" value="{{ticket_message[0]}}">
+
+            <input class="form-control" type="text" style="width: 100%; margin-bottom: 10px" name="title" value="{{ticket_message[2]}}">
+            <textarea class="form-control" rows="5" style="width: 100%; height: 200px;margin-bottom: 10px" name="answer">{{ticket_message[3]}}</textarea>
+            {% if ticket_message[4] %}
+                <img src="{{ url_for('static', filename='message/'+ticket_message[4]) }}" class="card-img-bottom" style="width:100%;max-height:600px; object-fit: cover; object-position: 50% 50%;" alt>
+            {% endif %}
+            <input type='checkbox' class="form-check-input" name='img_edit'> Заменить изображение
+            <input class="form-control my-3" name='file' type="file">
+            <button class="btn btn-primary" name="act-save-contact" value="1">Сохранить</button>
+        </form>
+      </div>
+    <div class="justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h4 class="h4">Стажировки:</h4>
+        <form method="post" enctype="multipart/form-data">
+            <input hidden name="id" value="{{form_message[0]}}">
+
+            <input class="form-control" type="text" style="width: 100%; margin-bottom: 10px" name="title" value="{{form_message[2]}}">
+            <textarea class="form-control" rows="5" style="width: 100%; height: 200px;margin-bottom: 10px" name="answer">{{form_message[3]}}</textarea>
+            {% if form_message[4] %}
+                <img src="{{ url_for('static', filename='message/'+form_message[4]) }}" class="card-img-bottom" style="width:100%;max-height:600px; object-fit: cover; object-position: 50% 50%;" alt>
+            {% endif %}
+            <input type='checkbox' class="form-check-input" name='img_edit'> Заменить изображение
+            <input class="form-control my-3" name='file' type="file">
+            <button class="btn btn-primary" name="act-save-contact" value="1">Сохранить</button>
+        </form>
+      </div>
+    <div class="justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h4 class="h4">Контакты:</h4>
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
             <input hidden name="id" value="{{contact_message[0]}}">
 
             <input class="form-control" type="text" style="width: 100%; margin-bottom: 10px" name="title" value="{{contact_message[2]}}">
             <textarea class="form-control" rows="5" style="width: 100%; height: 200px;margin-bottom: 10px" name="answer">{{contact_message[3]}}</textarea>
+            {% if contact_message[4] %}
+                <img src="{{ url_for('static', filename='message/'+contact_message[4]) }}" class="card-img-bottom" style="width:100%;max-height:600px; object-fit: cover; object-position: 50% 50%;" alt>
+            {% endif %}
+            <input type='checkbox' class="form-check-input" name='img_edit'> Заменить изображение
+            <input class="form-control my-3" name='file' type="file">
             <button class="btn btn-primary" name="act-save-contact" value="1">Сохранить</button>
         </form>
       </div>
+    <div class="justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h4 class="h4">FAQ - главное сообщение:</h4>
+        <form method="post" enctype="multipart/form-data">
+            <input hidden name="id" value="{{faq_message[0]}}">
 
+            <input class="form-control" type="text" style="width: 100%; margin-bottom: 10px" name="title" value="{{faq_message[2]}}">
+            <textarea class="form-control" rows="5" style="width: 100%; height: 200px;margin-bottom: 10px" name="answer">{{faq_message[3]}}</textarea>
+            {% if faq_message[4] %}
+                <img src="{{ url_for('static', filename='message/'+faq_message[4]) }}" class="card-img-bottom" style="width:100%;max-height:600px; object-fit: cover; object-position: 50% 50%;" alt>
+            {% endif %}
+            <input type='checkbox' class="form-check-input" name='img_edit'> Заменить изображение
+            <input class="form-control my-3" name='file' type="file">
+            <button class="btn btn-primary" name="act-save-contact" value="1">Сохранить</button>
+        </form>
+      </div>
     <div class="justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h4 class="h4">Настройки FAQ:</h4>
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
             <h4>Добавить вопрос</h4>
             <input class="form-control" type="text" style="width: 100%; margin-bottom: 10px;" name="title" placeholder="Заголовок">
             <textarea class="form-control" rows="5"  style="width: 100%; height: 70px;margin-bottom: 10px" name="answer" placeholder="Текст"></textarea>
+            <input class="form-control my-3" name='file' type="file">
             <button class="btn btn-success" name="act-add-faq" value="1">Добавить</button>
         </form>
         <hr>
         <h4 class="h4">Вопросы:</h4>
 
-        {% for id, type, title, answer in faq_message %}
-        <form method="post">
+        {% for id, type, title, answer, attach in faq_messages %}
+        <form method="post" enctype="multipart/form-data">
             <input hidden name="id" value="{{id}}">
             <input class="form-control" type="text" style="width: 100%; margin-bottom: 10px;" name="title" value="{{title}}">
             <textarea class="form-control"  rows="5" style="width: 100%; height: 200px;margin-bottom: 10px" name="answer">{{answer}}</textarea>
+            {% if attach %}
+                <img src="{{ url_for('static', filename='message/'+attach) }}" class="card-img-bottom" style="width:100%;max-height:600px; object-fit: cover; object-position: 50% 50%;" alt>
+            {% endif %}
+            <input type='checkbox' class="form-check-input" name='img_edit'> Заменить изображение
+            <input class="form-control my-3" name='file' type="file">
             <button class="btn btn-primary" name="act-save-faq" value="1">Сохранить</button>
             <button class="btn btn-danger" name="act-del-faq" value="1">Удалить</button>
         </form>

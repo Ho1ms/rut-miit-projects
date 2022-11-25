@@ -19,7 +19,8 @@ CREATE TABLE IF NOT EXISTS buttons (
     id SERIAL PRIMARY KEY,
     type VARCHAR(16) NOT NULL DEFAULT 'faq',
     title VARCHAR(256) NOT NULL DEFAULT 'Нет названия',
-    answer VARCHAR(4096) NOT NULL DEFAULT 'Нет текста'
+    answer VARCHAR(4096) NOT NULL DEFAULT 'Нет текста',
+    attachment VARCHAR(64) DEFAULT ''
 );
 CREATE TABLE IF NOT EXISTS cities (
     id SERIAL PRIMARY KEY,
@@ -47,12 +48,7 @@ CREATE TABLE IF NOT EXISTS forms (
     FOREIGN KEY (city_id) REFERENCES cities(id),
     FOREIGN KEY (direction_id) REFERENCES directions(id)
 );
-CREATE TABLE IF NOT EXISTS messages (
-    id SERIAL PRIMARY KEY,
-    type varchar(32),
-    title varchar(64),
-    description varchar(2048)
-);
+
 INSERT INTO cities (title) VALUES ('Москва'),('Воронеж');
 INSERT INTO directions (title) VALUES ('IT'),('Финансы'),('Анализ');
 
@@ -79,7 +75,7 @@ INSERT INTO buttons ( type,title, answer) VALUES
 `8 (800) 775-11-22`'),
     ('faq','Что такое ДОМ.РФ?','ДОМ.РФ — крупнейший финансовый институт, который 25 лет занимается развитием жилищной сферы в России.
 Мы объединяем направления, которые способствуют прогрессу рынка недвижимости и поддерживают его участников — граждан, девелоперов, финансовые организации. С нашей помощью ипотека стала доступной, аренда — цивилизованной, а окружающая среда — благоустроенной.
-')
+'),('form','Стажировки','Подать заявку на стражировку'),('ticket','Связаться с нами','Тут будет текст...'),('faq_main','Список вопросов:','Много-много вопросов')
     ON CONFLICT DO NOTHING;
 
 INSERT INTO users (id, username,first_name, last_name, hash, photo_code, role_id) VALUES

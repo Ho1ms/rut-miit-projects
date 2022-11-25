@@ -98,19 +98,37 @@ def form_handler():
 
     return {'data': body},200
 
-@app.route('/api/get-<type>-message', endpoint='get_start_message')
+@app.route('/api/get-<type>-<type_2>', endpoint='get_start_message')
 @access([1,2])
-def get_start_message(type):
-    if type not in ('faq','start','contact'):
+def get_start_message(type, type_2):
+    if type not in ('faq','start','contacts', 'form','ticket','faq_main') or type_2 not in ('messages','message'):
         return 'Unknown type',404
     sql, db = create_conn()
-    sql.execute('SELECT description, attachment FROM messages LIMIT 1')
-    row = sql.fetchone()
+    sql.execute('SELECT title, answer, attachment, id FROM buttons WHERE type = %s',(type,))
+
+
+    if type_2 == 'message':
+        row = sql.fetchone()
+        data = {
+            'id':row[3],
+            'title': row[0] ,
+            'text': row[1] ,
+            'attachment': row[2] or ''
+        }
+    elif type_2 == 'messages':
+        rows = sql.fetchall()
+        data = []
+        for row in rows:
+            data.append(
+                {
+                    'id':row[3],
+                    'title': row[0] ,
+                    'text': row[1],
+                    'attachment': row[2] or ''
+                }
+            )
+
     db.close()
-    data = {
-        'text':row[0],
-        'attachment': url_for('static',filename=f'message/{row[1]}') if row[1] else ''
-    }
 
     return json.dumps(data, ensure_ascii=False), 200
 
