@@ -1,15 +1,13 @@
 import os
 import requests
 from os.path import join
-from aiogram import Bot, types
-from aiogram.utils import executor
-from aiogram.dispatcher import Dispatcher
+from aiogram import Bot, types,Dispatcher
 from app.config import TOKEN, host, cookies
-from aiogram.utils.markdown import escape_md
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.utils.keyboard import ReplyKeyboardBuilder, KeyboardButton,InlineKeyboardBuilder
 
-bot = Bot(token=TOKEN)
-dp = Dispatcher(bot)
+bot = Bot(token=TOKEN, parse_mode="HTML")
+dp = Dispatcher()
 
 START_MESSAGE = CONTACT_MESSAGE = FAQ_MESSAGE = FAQ_MESSAGES = MAIN_MARKUP = FORM_MESSAGE = TICKET_MESSAGE = FAQ_TITLES = {}
 
@@ -24,23 +22,31 @@ def get_messages():
     FAQ_MESSAGE = requests.get(f'{host}api/get-faq_main-message', cookies=cookies).json()
     FAQ_MESSAGES = requests.get(f'{host}api/get-faq-messages', cookies=cookies).json()
 
-    MAIN_MARKUP_ROWS = [FORM_MESSAGE, CONTACT_MESSAGE, FAQ_MESSAGE, TICKET_MESSAGE]
+    MAIN_MARKUP_ROWS = [(FORM_MESSAGE, CONTACT_MESSAGE), (FAQ_MESSAGE, TICKET_MESSAGE)]
 
-    MAIN_MARKUP = ReplyKeyboardMarkup(resize_keyboard=True)
-    FAQ_MARKUP = InlineKeyboardMarkup(row_width=2)
-    FAQ_TITLES = {}
+    MAIN_MARKUP = ReplyKeyboardBuilder()
+    FAQ_MARKUP = InlineKeyboardBuilder()
+
+    buttons = []
 
     for i, faq in enumerate(FAQ_MESSAGES):
-        FAQ_TITLES[faq.get('id')] = faq.get('text')
-        FAQ_MARKUP.add(InlineKeyboardButton(faq.get('title'), callback_data=i))
+       buttons.append(InlineKeyboardButton(text=faq.get('title'), callback_data=i))
+
+    FAQ_MARKUP.row(*buttons, width=2)
 
     for button in MAIN_MARKUP_ROWS:
-        print(button, button.get('title'))
-        MAIN_MARKUP.add(button.get('title'))
+        MAIN_MARKUP.row(
+            KeyboardButton(text=button[0].get('title')),
+            KeyboardButton(text=button[1].get('title'))
+        )
 
+    MAIN_MARKUP = MAIN_MARKUP.as_markup(resize_keyboard=True)
+    FAQ_MARKUP = FAQ_MARKUP.as_markup()
     print('BUTTONS LOADED')
 
+
 get_messages()
+
 
 def get_static(file_name:str) -> str:
     f = open(join(os.getcwd(), 'app', 'static', 'message', file_name), 'rb')
@@ -48,7 +54,8 @@ def get_static(file_name:str) -> str:
     f.close()
     return data
 
-@dp.message_handler(commands=['refresh_buttons'])
+
+@dp.message(commands=['refresh_buttons'])
 async def refresh_buttons(message: types.Message):
     await bot.send_message(
         chat_id=message.from_user.id,
@@ -62,7 +69,8 @@ async def refresh_buttons(message: types.Message):
         text='Перезагрузил кнопки!'
     )
 
-@dp.message_handler(commands=['start'])
+
+@dp.message(commands=['start'])
 async def process_start_command(message: types.Message):
 
     text = START_MESSAGE.get('text')
@@ -71,64 +79,70 @@ async def process_start_command(message: types.Message):
             chat_id=message.from_user.id,
             photo=get_static(START_MESSAGE.get('attachment')),
             caption=text,
-            reply_markup=MAIN_MARKUP,
-            parse_mode=types.ParseMode.HTML
+            reply_markup=MAIN_MARKUP
         )
     else:
         await bot.send_message(
             chat_id=message.from_user.id,
             text=text,
-            reply_markup=MAIN_MARKUP,
-            parse_mode=types.ParseMode.HTML
+            reply_markup=MAIN_MARKUP
         )
-
     requests.get(f'{host}api/add-use-{message.from_user.id}', cookies=cookies)
 
-@dp.message_handler(lambda message: CONTACT_MESSAGE.get('title') == message.text)
+
+@dp.message(lambda message: CONTACT_MESSAGE.get('title') == message.text)
 async def contact_handler(message: types.Message):
+
     await bot.send_message(
         chat_id=message.from_user.id,
-        text=CONTACT_MESSAGE.get('text'),
-        parse_mode=types.ParseMode.HTML
+        text=CONTACT_MESSAGE.get('text')
     )
 
-@dp.message_handler(lambda message: FAQ_MESSAGE.get('title') == message.text)
+
+@dp.message(lambda message: FORM_MESSAGE.get('title') == message.text)
+async def form_handler(message: types.Message):
+
+    await bot.send_message(
+        chat_id=message.from_user.id,
+        text=FORM_MESSAGE.get('text')
+    )
+
+
+@dp.message(lambda message: FAQ_MESSAGE.get('title') == message.text)
 async def faq_main_handler(message: types.Message):
+
     await bot.send_message(
         chat_id=message.from_user.id,
         text=FAQ_MESSAGE.get('text'),
-        parse_mode=types.ParseMode.HTML,
         reply_markup=FAQ_MARKUP
     )
 
-@dp.message_handler(lambda message: TICKET_MESSAGE.get('title') == message.text)
+@dp.message(lambda message: TICKET_MESSAGE.get('title') == message.text)
 async def ticket_handler(message: types.Message):
+
     await bot.send_message(
         chat_id=message.from_user.id,
-        text=TICKET_MESSAGE.get('text'),
-        parse_mode=types.ParseMode.HTML,
-        reply_markup=FAQ_MARKUP
+        text=TICKET_MESSAGE.get('text')
     )
 
-@dp.callback_query_handler(lambda call: call.data and call.data.isdigit() and int(call.data) < len(FAQ_TITLES))
+@dp.callback_query(lambda call: call.data and call.data.isdigit() and int(call.data) < len(FAQ_TITLES))
 async def faq_handler(call: types.Message):
+
     data = FAQ_MESSAGES[int(call.data)]
     text = data.get('text')
+
     if data.get('attachment'):
         await bot.send_photo(
             chat_id=call.from_user.id,
             photo=get_static(data.get('attachment')),
-            caption=text,
-            parse_mode=types.ParseMode.HTML
+            caption=text
         )
     else:
         await bot.send_message(
             chat_id=call.from_user.id,
-            text=text,
-            parse_mode=types.ParseMode.HTML
+            text=text
         )
 
 
-
 if __name__ == '__main__':
-    executor.start_polling(dp)
+    dp.run_polling(bot)
