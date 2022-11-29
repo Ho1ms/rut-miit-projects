@@ -7,6 +7,7 @@ window.onload = () => {
               <td>${data.surname}</td>
               <td>${data.years}</td>
               <td>${data.type}</td>
+              <td>Новое</td>
             </tr>` + tbody.innerHTML
 
     });

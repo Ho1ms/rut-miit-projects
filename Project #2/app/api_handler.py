@@ -20,10 +20,10 @@ def add_form(user_id):
 @access([1,2])
 def get_form():
     id = request.args.get('id')
-    print(id)
+
     if not id or not id.isdigit():
         return 'Not valid',400
-    print('1234')
+
     sql, db = create_conn()
     names = ['id','user_id','name', 'surname', 'father_name',
              'city','years','date','direction','email','cover_letter', 'resume', 'university','education']
@@ -44,7 +44,7 @@ def get_form():
 get_tables = {
     'directions':['id','name'],
     'cities':['id','name'],
-    'professional_codes':['id','code','title']
+    'profession_codes':['id','code','title']
 }
 
 @app.route('/api/get-<table>', endpoint='get_directions')
@@ -66,10 +66,12 @@ def get_table(table):
 def form_handler():
     data = request.json
     sql, db = create_conn()
+
     data['birthday_date'] = datetime.datetime.strptime(data['birthday_date'], '%d.%m.%Y').strftime('%Y-%m-%d')
-    names = ['user_id','name', 'surname', 'father_name', 'city_id','birthday_date','direction_id','email','cover_letter', 'resume', 'university','profession_id']
+    names = ['user_id','name', 'surname', 'father_name', 'city_id','birthday_date',
+             'direction_id','email','cover_letter', 'resume', 'university','profession_id']
     sql.execute(f"""INSERT INTO forms ({", ".join(names)}) 
-    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id""",(*[data.get(i) for i in names],))
+    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id""",(*[data.get(i) for i in names],))
 
     return_id = sql.fetchone()[0]
     db.commit()
