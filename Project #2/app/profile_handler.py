@@ -28,13 +28,17 @@ def index():
         form = request.form
         form_id = form.get('form_id')
         status = form.get('status')
-        print(form_id, status, form)
+
         if form_id and form_id.isdigit() and status  in ('agreed', 'rejected'):
 
-            sql.execute('UPDATE forms SET status = %s WHERE id=%s',(status,form_id))
-            db.commit()
+            sql.execute("UPDATE forms SET status = %s WHERE id=%s AND status='new'",(status,form_id))
 
-            message.append({'title':'Изменение статуса анкеты.','message':'Статус анкеты успешно изменён!', 'type':'success'})
+            message.append(
+                {'title':'Изменение статуса анкеты.','message':'Статус анкеты успешно изменён!', 'type':'success'}
+                if sql.rowcount == 1 else
+                {'title': 'Изменение статуса анкеты.', 'message': 'Ошибка анкета уже была рассмотрена другим сотрудником!', 'type': 'danger'}
+            )
+            db.commit()
 
     sql.execute("SELECT to_char(i, 'DD.MM'), COUNT(date) FROM generate_series( date %s,  %s, '1 day'::interval) i LEFT JOIN bot_uses b ON i = b.date GROUP BY i",(start, stop))
     rows = sql.fetchall()

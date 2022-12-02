@@ -1,0 +1,70 @@
+{% extends 'template.html' %}
+
+{% block content %}
+ <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h2 class="h2">Чат с пользователем {{user.get('name')}}</h2>
+      </div>
+  <div class="container py-5">
+
+        <ul class="list-unstyled" id="messages">
+          <li class="d-flex justify-content-between mb-4">
+            <img src="{{user.get('img')}}" alt="avatar"
+              class="rounded-circle d-flex align-self-start m-3 shadow-1-strong" width="60">
+            <div class="card w-100">
+              <div class="card-header d-flex justify-content-between p-3">
+                <p class="fw-bold mb-0">{{user.get('name')}}</p>
+                <p class="text-muted small mb-0"><i class="far fa-clock"></i> {{user.get('date')}}</p>
+              </div>
+              <div class="card-body">
+                <p class="mb-0">
+                  {{user.get('question')}}
+                </p>
+              </div>
+            </div>
+          </li>
+            {% for author_id, author_name, author_img, text, date in messages %}
+            <li class="d-flex justify-content-between mb-4 ">
+            {% if user.get('id')==author_id %}
+                <img src="{{ author_img }}" class="rounded-circle d-flex align-self-start m-3 shadow-1-strong" width="60">
+            {% endif %}
+
+            <div class="card w-100">
+              <div class="card-header d-flex justify-content-between p-3">
+                <p class="fw-bold mb-0">{{author_name}}</p>
+                <p class="text-muted small mb-0"><i class="far fa-clock"></i> {{date}}</p>
+              </div>
+              <div class="card-body">
+                <p class="mb-0">
+                  {{text}}
+                </p>
+              </div>
+            </div>
+                {% if user.get('id')!=author_id %}
+                   <img src="{{ author_img }}" class="rounded-circle d-flex align-self-start m-3 shadow-1-strong" width="60">
+                {% endif %}
+
+          </li>
+            {% endfor %}
+        </ul>
+        <div >
+            <div class="form-floating ">
+              <textarea class="form-control" id="text" rows="4"></textarea>
+              <label class="form-label" for="text">Сообщение</label>
+            </div>
+
+          <button type="button" class="btn  btn-primary float-end my-2" onclick="send_message();">Отправить</button>
+        </div>
+      </div>
+
+
+ </main>
+<script>
+    avatar = '{{author[1]}}'
+    name = '{{author[0]}}'
+</script>
+{% endblock %}
+{% block scripts %}
+<script src="{{url_for('static', filename='js/chat.js')}}"></script>
+
+{% endblock %}

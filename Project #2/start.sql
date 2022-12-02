@@ -86,5 +86,26 @@ INSERT INTO users (id, username,first_name, last_name, hash, photo_code, role_id
 CREATE TABLE IF NOT EXISTS bot_uses (
     user_id BIGINT PRIMARY KEY,
     date TIMESTAMP DEFAULT CURRENT_DATE
+);
+
+CREATE TABLE IF NOT EXISTS tickets (
+    id SERIAL PRIMARY KEY,
+    user_id BIGINT,
+    user_name VARCHAR(256),
+    user_img VARCHAR(256),
+    status VARCHAR(32) DEFAULT 'new',
+    admin_id BIGINT,
+    admin_name VARCHAR(256),
+    create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    answer_date TIMESTAMP DEFAULT NULL,
+    close_date TIMESTAMP DEFAULT NULL
+);
+
+CREATE TABLE ticket_messages (
+    id SERIAL PRIMARY KEY,
+    author_id BIGINT,
+    text VARCHAR(4096),
+    ticket BIGINT,
+    FOREIGN KEY (ticket) REFERENCES tickets(id)
 )
 
