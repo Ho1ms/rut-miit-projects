@@ -5,7 +5,31 @@ from . import app, socketio
 from .database import create_conn
 from .config import pages
 from flask import request, url_for, render_template
+from flask_socketio import join_room, leave_room
 
+
+@socketio.on('join')
+def on_join(data):
+    id = data.get('id')
+    token = data.get('token')
+
+    if not id or not token:
+        return
+
+    sql, db = create_conn()
+
+    sql.execute(f"""SELECT id FROM users WHERE id = %s AND hash = %s AND role_id < 6""", (id, token))
+    row = sql.fetchone()
+    db.close()
+
+    if row:
+        room = data.get('room')
+        join_room(room)
+
+@socketio.on('leave')
+def on_leave(data):
+    room = data.get('room')
+    leave_room(room)
 
 @app.route('/tickets', endpoint='tickets')
 @access([1,2,3,4,5])
@@ -24,7 +48,7 @@ def ticket_page(id):
         data = request.json
         sql.execute(f"INSERT INTO ticket_messages (author_id, text, ticket, author_name, author_img) VALUES ({request.cookies.get('id')}, %s, {id},%s,%s) ", (data.get('text'), data.get('name'), data.get('img')))
         db.commit()
-        socketio.emit('new_message',{'name':data.get('name'), 'text':data.get('text'), 'avatar':data.get('img')}, namespace=f'/tickets/{id}')
+        socketio.emit('new_message',{'name':data.get('name'), 'text':data.get('text'), 'avatar':data.get('img')}, to=f'/tickets/{id}')
         return {}, 200
     sql.execute(f"SELECT author_id, author_name, author_img, text, to_char(date, 'HH24:MI:SS DD.MM.YYYY') FROM ticket_messages WHERE ticket={id} ORDER BY id ")
     messages = sql.fetchall()

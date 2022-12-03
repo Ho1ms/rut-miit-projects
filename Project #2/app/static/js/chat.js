@@ -1,6 +1,20 @@
-const chat_socket = io.connect(document.location.href)
+function getCook(cookiename)
+  {
+  var cookiestring=RegExp(cookiename+"=[^;]+").exec(document.cookie);
+  return decodeURIComponent(!!cookiestring ? cookiestring.toString().replace(/^[^=]+./,"") : "");
+  }
 
-chat_socket.on('new_message', function (data) {
+socket.on('connect', function (data) {
+    socket.emit('join',
+        {
+            'room':location.pathname,
+            'token':getCook('token'),
+            'id':getCook('id')
+        })
+    console.log('Connected chat!');
+});
+
+socket.on('new_message', function (data) {
     let block = `<li class="d-flex justify-content-between mb-4">
             
             <div class="card w-100">
