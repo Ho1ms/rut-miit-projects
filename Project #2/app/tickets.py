@@ -47,7 +47,7 @@ def ticket_page(id):
     if request.method == 'POST':
         data = request.json
         if data.get('action') == 'close-ticket':
-            sql.execute(f"UPDATE tickets SET status='closed', close_date=CURRENT_TIMESTAMP WHERE id={id}")
+            sql.execute(f"UPDATE tickets SET status='closed', close_date=CURRENT_TIMESTAMP WHERE id={id} AND admin_id={request.cookies.get('id')}")
             db.commit()
             socketio.emit('close_ticket',to=f'/tickets/{id}')
             return {},200
