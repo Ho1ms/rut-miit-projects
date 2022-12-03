@@ -134,3 +134,25 @@ def get_start_message(type, type_2):
 
     return json.dumps(data, ensure_ascii=False), 200
 
+@app.route('/create-ticket',methods=('POST',), endpoint='create_ticket')
+@access([1,2])
+def create_ticket():
+    data = request.json
+    user = data.get('user')
+
+    sql, db = create_conn()
+
+    sql.execute(f"INSERT INTO tickets (user_id, user_name, user_img, question) VALUES (%s,%s,%s,%s) RETURNING id",(user.get('id'),user.get('name'),user.get('img'),data.get('message')))
+    row = sql.fetchone()[0]
+
+    db.commit()
+    db.close()
+    notify_body = {
+        'title':'Новый тикет!',
+        'description':f'Пользователь {user.get("name")} создал тикет!',
+        'icon': url_for('static',filename="Logo.jpg")
+    }
+    socketio.emit('notify',notify_body)
+
+    socketio.emit('new_ticket',{'id':row,'message':data.get('message'),'username':user.get('name')})
+    return {'message':'Скоро с вами свяжуться.'}

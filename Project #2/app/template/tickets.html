@@ -22,10 +22,10 @@
               cursor: pointer;
             }
           </style>
-          <tbody>
+          <tbody id="tickets">
           {% for i, name, message, status, support, date in tickets %}
 
-            <tr id="{{i}}" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+            <tr>
 
               <td>{{i}}</td>
               <td>{{name}}</td>
@@ -34,7 +34,7 @@
                 <td>Активный</td>
               {% elif status == 'rejected' %}
                 <td>Отклонено</td>
-              {% elif status == 'complete' %}
+              {% elif status == 'closed' %}
                 <td>Завершён</td>
               {% else %}
                 <td>Новое</td>
@@ -58,3 +58,7 @@
  </main>
 {% endblock %}
 
+{% block scripts %}
+<script src="{{url_for('static', filename='js/tickets.js')}}"></script>
+
+{% endblock %}

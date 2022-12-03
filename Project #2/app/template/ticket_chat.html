@@ -49,11 +49,12 @@
         </ul>
         <div >
             <div class="form-floating ">
-              <textarea class="form-control" id="text" rows="4"></textarea>
-              <label class="form-label" for="text">Сообщение</label>
+              <textarea class="form-control" {{'disabled' if user.get('status')  == 'closed'}}  id="text" rows="4"></textarea>
+              <label class="form-label" for="text" >Сообщение</label>
             </div>
 
-          <button type="button" class="btn  btn-primary float-end my-2" onclick="send_message();">Отправить</button>
+          <button type="button" {{'disabled' if user.get('status') == 'closed'}} class="btn btn-primary float-end m-2" onclick="send_message();">Отправить</button>
+          <button type="button" {{'disabled' if user.get('status') == 'closed'}} class="btn btn-danger float-end m-2" onclick="close_ticket();">Закрыть тикет</button>
         </div>
       </div>
 

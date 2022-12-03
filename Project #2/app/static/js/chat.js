@@ -33,6 +33,28 @@ socket.on('new_message', function (data) {
           </li>`
                 messages.innerHTML += block
 })
+
+socket.on('close_ticket',function (data){
+    document.getElementsByTagName('textarea')[0].disabled = true
+    let buttons = document.getElementsByTagName('button')
+    buttons[1].disabled = true
+    buttons[2].disabled = true
+})
+function close_ticket() {
+    fetch(
+        document.location.href,
+        {
+        method: "post",
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            action:'close-ticket'
+         })
+        })
+}
+
 function send_message() {
 
     let text = document.getElementById('text')
