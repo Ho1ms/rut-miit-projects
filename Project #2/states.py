@@ -1,7 +1,4 @@
 from aiogram.dispatcher.fsm.state import State, StatesGroup
-from aiogram import Router
-
-form_router = Router()
 
 class FormState(StatesGroup):
 
@@ -17,4 +14,9 @@ class FormState(StatesGroup):
     PROFESSION_STATE = State()
     RESUME_STATE = State()
     SUCCESS = State()
+
+class TicketState(StatesGroup):
+
+    CREATE = State()
+    ACTIVE = State()
 

@@ -3,9 +3,10 @@ import datetime
 from .access import access
 from . import app, socketio
 from .database import create_conn
-from .config import pages
+from .config import pages, TOKEN
 from flask import request, url_for, render_template
 from flask_socketio import join_room, leave_room
+import requests
 
 
 @socketio.on('join')
@@ -47,15 +48,26 @@ def ticket_page(id):
     if request.method == 'POST':
         data = request.json
         if data.get('action') == 'close-ticket':
-            sql.execute(f"UPDATE tickets SET status='closed', close_date=CURRENT_TIMESTAMP WHERE id={id} AND admin_id={request.cookies.get('id')}")
+
+            user_id = data.get('user_id')
+            user_id = user_id if type(user_id)==int else 0
+            sql.execute(f"UPDATE tickets SET status='closed', close_date=CURRENT_TIMESTAMP WHERE id={id} AND (admin_id={request.cookies.get('id')} OR user_id={user_id})")
             db.commit()
             socketio.emit('close_ticket',to=f'/tickets/{id}')
-            return {},200
+            return {'close_ticket':True},200
         else:
-            sql.execute(f"INSERT INTO ticket_messages (author_id, text, ticket, author_name, author_img) VALUES ({request.cookies.get('id')}, %s, {id},%s,%s) ", (data.get('text'), data.get('name'), data.get('img')))
-            db.commit()
-            socketio.emit('new_message',{'name':data.get('name'), 'text':data.get('text'), 'avatar':data.get('img')}, to=f'/tickets/{id}')
-            return {}, 200
+            sql.execute(f"SELECT id FROM tickets WHERE id={id} AND status='active'")
+            r = sql.fetchone()
+            if r:
+                sql.execute(f"INSERT INTO ticket_messages (author_id, text, ticket, author_name, author_img) VALUES (%s, %s, {id},%s,%s) ", (data.get('user_id'),data.get('text'), data.get('name'), data.get('img')))
+                db.commit()
+                if request.cookies.get('is_bot') is None:
+                    response = requests.post(url=f'https://api.telegram.org/bot{TOKEN}/sendMessage', data={'chat_id': data.get('user_id'), 'text': data.get('text')}).json()
+                    print(response)
+                socketio.emit('new_message',{'name':data.get('name'), 'text':data.get('text'), 'avatar':data.get('img'), 'is_bot':request.cookies.get('is_bot')}, to=f'/tickets/{id}')
+                return {'active':True}, 200
+            return {'active': False}, 200
+
     sql.execute(f"SELECT author_id, author_name, author_img, text, to_char(date, 'HH24:MI:SS DD.MM.YYYY') FROM ticket_messages WHERE ticket={id} ORDER BY id ")
     messages = sql.fetchall()
 

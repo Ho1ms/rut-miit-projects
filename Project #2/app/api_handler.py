@@ -155,4 +155,4 @@ def create_ticket():
     socketio.emit('notify',notify_body)
 
     socketio.emit('new_ticket',{'id':row,'message':data.get('message'),'username':user.get('name')})
-    return {'message':'Скоро с вами свяжуться.'}
+    return {'id':row}, 200

@@ -1,4 +1,4 @@
-{% extends 'template.html' %}
+<script src="../static/js/chat.js"></script>{% extends 'template.html' %}
 
 {% block content %}
  <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
@@ -9,7 +9,7 @@
 
         <ul class="list-unstyled" id="messages">
           <li class="d-flex justify-content-between mb-4">
-            <img src="{{user.get('img')}}" alt="avatar"
+            <img src="{{ url_for('static', filename='img/avatars/'+user.get('img')) if not user.get('img').startswith('https:') else user.get('img')}}" alt="avatar"
               class="rounded-circle d-flex align-self-start m-3 shadow-1-strong" width="60">
             <div class="card w-100">
               <div class="card-header d-flex justify-content-between p-3">
@@ -26,7 +26,7 @@
             {% for author_id, author_name, author_img, text, date in messages %}
             <li class="d-flex justify-content-between mb-4 ">
             {% if user.get('id')==author_id %}
-                <img src="{{ author_img }}" class="rounded-circle d-flex align-self-start m-3 shadow-1-strong" width="60">
+                <img src="{{ url_for('static', filename='img/avatars/'+author_img) if not author_img.startswith('https:') else author_img}}" class="rounded-circle d-flex align-self-start m-3 shadow-1-strong" width="60">
             {% endif %}
 
             <div class="card w-100">
@@ -41,7 +41,7 @@
               </div>
             </div>
                 {% if user.get('id')!=author_id %}
-                   <img src="{{ author_img }}" class="rounded-circle d-flex align-self-start m-3 shadow-1-strong" width="60">
+                   <img src="{{ url_for('static', filename='img/avatars/'+author_img) if not author_img.startswith('https:') else author_img}}" class="rounded-circle d-flex align-self-start m-3 shadow-1-strong" width="60">
                 {% endif %}
 
           </li>

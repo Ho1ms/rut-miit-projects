@@ -4,7 +4,7 @@ import requests
 from os.path import join
 from aiogram import Bot, types,Dispatcher
 from app.config import TOKEN, host, cookies
-from form_state import FormState, form_router
+from states import FormState, TicketState
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, KeyboardButton,InlineKeyboardBuilder
 from aiogram.types import ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup, FSInputFile
 
@@ -168,17 +168,102 @@ async def ticket_handler(message: types.Message):
 
     text = TICKET_MESSAGE.get('text')
 
+    keyboard = InlineKeyboardBuilder()
+    keyboard.add(InlineKeyboardButton(text='Связаться', callback_data='create-ticket'))
+
     if TICKET_MESSAGE.get('attachment'):
         await bot.send_photo(
             chat_id=message.from_user.id,
             photo=get_static(TICKET_MESSAGE.get('attachment')),
-            caption=text
+            caption=text,
+            reply_markup=keyboard.as_markup()
         )
     else:
         await bot.send_message(
             chat_id=message.from_user.id,
-            text=text
+            text=text,
+            reply_markup=keyboard.as_markup()
+
         )
+
+@dp.callback_query(lambda call: call.data and call.data == 'create-ticket')
+async def ticket_handler(call: types.Message, state):
+    await state.set_state(TicketState.CREATE)
+    await bot.send_message(
+        chat_id=call.from_user.id,
+        text='Введите сообщение, чтобы операторы могли вам помочь.'
+    )
+
+@dp.message( TicketState.CREATE )
+async def create_ticket_handler(message: types.Message, state):
+    profile_pictures = await bot.get_user_profile_photos(message.from_user.id, limit=1)
+    file = await bot.get_file(profile_pictures.photos[0][-1].file_id)
+    await bot.download_file(file.file_path, os.path.join('app','static','img','avatars', f'avatar_{message.from_user.id}.jpg'))
+
+    await state.set_state(TicketState.ACTIVE)
+    body = {
+        'user':{
+            'id':message.from_user.id,
+            'name':message.from_user.username,
+            'img': f'avatar_{message.from_user.id}.jpg',
+        },
+        'message':message.text
+    }
+    data = requests.post(f'{host}/create-ticket',json=body,cookies=cookies).json()
+    await state.update_data(id=data.get("id","0"))
+
+    keyboard = InlineKeyboardBuilder()
+    keyboard.add(InlineKeyboardButton(text=f'Закрыть тикет #{data.get("id","0")}', callback_data=f'close_ticket-{data.get("id")}'))
+
+    await bot.send_message(
+        chat_id=message.from_user.id,
+        text='<b>Ищем свободных сотрудников.</b>\n<code>Ожидайте, скоро вам ответят!</code>',
+        reply_markup=keyboard.as_markup()
+    )
+
+
+@dp.message(TicketState.ACTIVE, lambda m: m.text not in (FAQ_MESSAGE.get('title'), TICKET_MESSAGE.get('title'),FORM_MESSAGE.get('title'), CONTACT_MESSAGE.get('title')) )
+async def create_ticket_message_handler(message: types.Message, state):
+    ticket_id = await state.get_data()
+    body = {
+        'text':message.text,
+        'name':message.from_user.username,
+        'img':f'avatar_{message.from_user.id}.jpg',
+        'user_id':message.from_user.id,
+    }
+
+    r = requests.post(f'{host}/tickets/{ticket_id.get("id")}', json=body, cookies=cookies)
+
+    if r.status_code != 200:
+        return
+
+    r = r.json()
+    if r.get('active') == False:
+        await bot.send_message(
+            chat_id=message.from_user.id,
+            text='Сеанс был прекращён'
+        )
+        await state.clear()
+
+@dp.callback_query(lambda c: c.data and c.data.startswith('close_ticket-') and TicketState.ACTIVE)
+async def close_ticket(call, state):
+    ticket_id = call.data.replace('close_ticket-','')
+
+    if not ticket_id.isdigit():
+        return
+
+    body = {
+        'action':'close-ticket',
+        'user_id':call.from_user.id
+    }
+
+    requests.post(f'{host}/tickets/{ticket_id}', json=body, cookies=cookies)
+
+    await bot.send_message(
+        chat_id=message.from_user.id,
+        text='Вы отменили поиск.'
+    )
+    await state.clear()
 
 
 @dp.callback_query(lambda call: call.data and call.data.isdigit() and int(call.data) < len(FAQ_MESSAGES))
@@ -352,7 +437,6 @@ async def get_direction(e, state):
         chat_id=e.from_user.id,
         text='Пришлите свооё резюме (файл):'
     )
-    d = await state.get_data()
 
 
 @dp.message(lambda m: (m.photo or m.document) and FormState.RESUME_STATE)
