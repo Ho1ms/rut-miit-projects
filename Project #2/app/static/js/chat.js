@@ -16,7 +16,7 @@ socket.on('connect', function (data) {
 
 socket.on('new_message', function (data) {
     let avatar_url = data.avatar.startsWith('https://t.me/i/userpic/320/') ? data.avatar : document.location.origin+'/static/img/avatars/'+data.avatar
-    let img = `<img src="${avatar_url}" alt="avatar" className="rounded-circle d-flex align-self-start m-3 shadow-1-strong" width="60">`
+    let img = `<img src="${avatar_url}" alt="avatar" class="rounded-circle d-flex align-self-start m-3 shadow-1-strong" width="60">`
     let block = `<li class="d-flex justify-content-between mb-4">
             
             <div class="card w-100">

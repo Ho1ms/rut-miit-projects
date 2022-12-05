@@ -56,14 +56,13 @@ def ticket_page(id):
             socketio.emit('close_ticket',to=f'/tickets/{id}')
             return {'close_ticket':True},200
         else:
-            sql.execute(f"SELECT id FROM tickets WHERE id={id} AND status='active'")
+            sql.execute(f"SELECT user_id FROM tickets WHERE id={id} AND status='active'")
             r = sql.fetchone()
             if r:
                 sql.execute(f"INSERT INTO ticket_messages (author_id, text, ticket, author_name, author_img) VALUES (%s, %s, {id},%s,%s) ", (data.get('user_id'),data.get('text'), data.get('name'), data.get('img')))
                 db.commit()
                 if request.cookies.get('is_bot') is None:
-                    response = requests.post(url=f'https://api.telegram.org/bot{TOKEN}/sendMessage', data={'chat_id': data.get('user_id'), 'text': data.get('text')}).json()
-                    print(response)
+                    requests.post(url=f'https://api.telegram.org/bot{TOKEN}/sendMessage', data={'chat_id': r[0], 'text': data.get('text'),'parse_mode':"HTML"}).json()
                 socketio.emit('new_message',{'name':data.get('name'), 'text':data.get('text'), 'avatar':data.get('img'), 'is_bot':request.cookies.get('is_bot')}, to=f'/tickets/{id}')
                 return {'active':True}, 200
             return {'active': False}, 200
