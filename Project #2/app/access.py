@@ -26,7 +26,7 @@ def access(access_roles ):
             if not row:
                 return redirect(url_for('auth'))
             elif row[0] not in access_roles:
-                return json.dumps({'message': 'У вас нет доступа к этой странице!', 'resultCode':2},ensure_ascii=False), 200
+                return '<h1 style="text-align:center;">Вам ещё не выдали доступ!</h1>'
             elif request.path == url_for('auth') and row[1]:
                 return redirect(url_for('index'))
 

@@ -13,7 +13,7 @@ def get_timestamp(date:datetime.datetime=None) -> int:
     return int(''.join(str(date.timestamp()).split('.'))[0:13].ljust(13,'0'))
 
 @app.route('/',methods=('GET','POST'),endpoint='index')
-@access(range(7))
+@access([1,2,3,4,5])
 def index():
     sql, db = create_conn()
 

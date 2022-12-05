@@ -11,7 +11,7 @@ def genCode(lenCode:int = 4):
     return ''.join(choices('1234567890qwertyuiopasdfgjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM', k=lenCode))
 
 @app.route('/config', methods=('POST','GET'), endpoint='tech')
-@access([1,2,6])
+@access([1,2,3,4])
 def tech():
     sql, db = create_conn()
     if request.method == 'POST':

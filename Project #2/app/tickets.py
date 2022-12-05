@@ -42,7 +42,7 @@ def tickets():
     return render_template('tickets.html', pages=pages, tickets=tickets)
 
 @app.route('/tickets/<int:id>',methods=('GET','POST'), endpoint='ticket_page')
-@access([1,2,3,4])
+@access([1,2,3,4,5])
 def ticket_page(id):
     sql, db = create_conn()
     if request.method == 'POST':
