@@ -1,6 +1,7 @@
 import os
 import re
 import requests
+import datetime
 from os.path import join
 from aiogram import Bot, types,Dispatcher
 from app.config import TOKEN, host, cookies
@@ -13,6 +14,12 @@ dp = Dispatcher()
 
 START_MESSAGE = CONTACT_MESSAGE = FAQ_MESSAGE = FAQ_MESSAGES = MAIN_MARKUP = FORM_MESSAGE = TICKET_MESSAGE = {}
 
+def check_date(date):
+    try:
+        d = datetime.datetime.strptime(date, '%d.%m.%Y')
+    except ValueError:
+        return False
+    return d < datetime.datetime.now()
 
 def get_messages():
     global START_MESSAGE, CONTACT_MESSAGE, FAQ_MESSAGE, FAQ_MARKUP, \
@@ -239,10 +246,6 @@ async def create_ticket_message_handler(message: types.Message, state):
 
     r = r.json()
     if r.get('active') == False:
-        await bot.send_message(
-            chat_id=message.from_user.id,
-            text='Сеанс был прекращён'
-        )
         await state.clear()
 
 @dp.callback_query(lambda c: c.data and c.data.startswith('close_ticket-') and TicketState.ACTIVE)
@@ -288,7 +291,7 @@ async def faq_handler(call: types.Message):
 @dp.message(FormState.FIRST_NAME_STATE)
 async def get_first_name(message: types.Message, state):
     await state.set_state(FormState.LAST_NAME_STATE)
-    await state.update_data(name=message.text)
+    await state.update_data(name=message.text.title())
 
     await bot.send_message(
         chat_id=message.from_user.id,
@@ -299,7 +302,7 @@ async def get_first_name(message: types.Message, state):
 @dp.message(FormState.LAST_NAME_STATE)
 async def get_last_name(message: types.Message, state):
     await state.set_state(FormState.FATHER_NAME_STATE)
-    await state.update_data(surname=message.text)
+    await state.update_data(surname=message.text.title())
 
     no_father_name = InlineKeyboardBuilder()
     no_father_name.row(InlineKeyboardButton(text='Отсутствует', callback_data='no_father_name'))
@@ -327,7 +330,7 @@ async def get_father_callback(call, state):
 async def get_father_callback(message: types.Message, state):
 
     await state.set_state(FormState.EMAIL_STATE)
-    await state.update_data(father_name=message.text)
+    await state.update_data(father_name=message.text.title())
 
     await bot.send_message(
         chat_id=message.from_user.id,
@@ -335,7 +338,7 @@ async def get_father_callback(message: types.Message, state):
     )
 
 
-@dp.message(FormState.EMAIL_STATE)
+@dp.message(lambda m: m.text and re.fullmatch('^[^\s@]+@[a-z^\s@]+\.[a-z^\s@]+$', m.text) and FormState.EMAIL_STATE)
 async def get_email(message: types.Message, state):
 
     await state.set_state(FormState.BIRTHDAY_STATE)
@@ -346,11 +349,20 @@ async def get_email(message: types.Message, state):
         text='Введите Дату рождения (31.01.2000):'
     )
 
+@dp.message(FormState.EMAIL_STATE)
+async def get_email_unknown(message: types.Message, state):
 
-@dp.message(lambda m: m.text and re.fullmatch('[0-3]\d.[0-1]\d.[1-2][0,9]\d\d', m.text) and FormState.BIRTHDAY_STATE)
+    await bot.send_message(
+        chat_id=message.from_user.id,
+        text='Почта указана не корректно.'
+    )
+
+@dp.message(lambda m: m.text and check_date(m.text) and FormState.BIRTHDAY_STATE)
 async def get_birthday_date(message: types.Message, state):
 
     await state.set_state(FormState.PROFESSION_STATE)
+
+    print('set prof' )
     await state.update_data(birthday_date=message.text)
 
     await bot.send_message(
@@ -358,6 +370,14 @@ async def get_birthday_date(message: types.Message, state):
         text='Введите код специальности (09.03.01):'
     )
 
+
+@dp.message(FormState.BIRTHDAY_STATE)
+async def get_birthday_date_unknown(message: types.Message):
+
+    await bot.send_message(
+        chat_id=message.from_user.id,
+        text='Такой даты не существует или она в будущем!'
+    )
 
 @dp.message(lambda m: m.text and re.fullmatch('\d\d.\d\d.\d\d', m.text) and m.text in PROFESSION_CODES and FormState.PROFESSION_STATE)
 async def get_profession(message: types.Message, state):
@@ -367,9 +387,16 @@ async def get_profession(message: types.Message, state):
 
     await bot.send_message(
         chat_id=message.from_user.id,
-        text='Введите название университета:'
+        text='Введите название учебного заведения:'
     )
 
+@dp.message(FormState.PROFESSION_STATE)
+async def get_profession_unknown(message: types.Message):
+
+    await bot.send_message(
+        chat_id=message.from_user.id,
+        text='Не верно указана специальность.\nЕсли у вас нет высшего образования, укажите: <code>00.00.00</code>'
+    )
 
 @dp.message(FormState.UNIVERSITY_STATE)
 async def get_university(message: types.Message, state):
@@ -433,9 +460,13 @@ async def get_direction(e, state):
     for id, name in DIRECTIONS:
         direction_keyboard.add(InlineKeyboardButton(text=name, callback_data='direction-' + str(id)))
 
+    keyboard = InlineKeyboardBuilder()
+    keyboard.add(InlineKeyboardButton(text='Без резюме', callback_data='skip_img'))
+
     await bot.send_message(
         chat_id=e.from_user.id,
-        text='Пришлите свооё резюме (файл):'
+        text='Пришлите свооё резюме (файл):',
+        reply_markup=keyboard.as_markup()
     )
 
 
@@ -473,6 +504,21 @@ async def get_file(m, state):
     await state.update_data(resume=file_name)
 
 
+@dp.callback_query(lambda c: c.data and c.data=='skip_img' and FormState.RESUME_STATE)
+async def get_file_skip(call, state):
+    keyboard = InlineKeyboardBuilder()
+    keyboard.add(InlineKeyboardButton(text='Подтверждаю', callback_data='send_form'))
+    keyboard.add(InlineKeyboardButton(text='Отмена', callback_data='cancel_form'))
+
+    await bot.send_message(
+        chat_id=call.from_user.id,
+        text='Даю согласие на обработку данных\n<b><a href="https://дом.рф/career/internship/#conditions">✅ Согласие</a></b>',
+        reply_markup=keyboard.as_markup()
+    )
+
+    await state.set_state(FormState.SUCCESS)
+    await state.update_data(resume='')
+
 @dp.callback_query(lambda e: e.data == 'cancel_form' and FormState.SUCCESS)
 async def close_form(event, state):
     await bot.send_message(
@@ -492,6 +538,7 @@ async def send_form(event, state):
     )
     body = await state.get_data()
     body['user_id'] = event.from_user.id
+    body['username'] = event.from_user.username
     await state.clear()
     requests.post(f'{host}api/form-handler', json=body, cookies=cookies)
 

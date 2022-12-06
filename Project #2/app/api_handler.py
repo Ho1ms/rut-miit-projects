@@ -26,11 +26,11 @@ def get_form():
 
     sql, db = create_conn()
     names = ['id','user_id','name', 'surname', 'father_name',
-             'city','years','date','direction','email','cover_letter', 'resume', 'university','education']
+             'city','years','date','direction','email','cover_letter', 'resume', 'university','education', 'username']
 
     sql.execute(f"""SELECT f.id, user_id, f.name, surname, 
     father_name, c.name, CAST(extract(years from age(now(), birthday_date)) as int) as years,
-     to_char(birthday_date, 'dd.mm.YYYY') as date, d.name, email, cover_letter, resume, university, format('%s %s',b.code , b.title)
+     to_char(birthday_date, 'dd.mm.YYYY') as date, d.name, email, cover_letter, resume, university, format('%s %s',b.code , b.title), username
     FROM forms as f 
     INNER JOIN directions as d ON f.direction_id = d.id 
     INNER JOIN cities as c ON c.id = f.city_id 
@@ -69,16 +69,16 @@ def form_handler():
 
     data['birthday_date'] = datetime.datetime.strptime(data['birthday_date'], '%d.%m.%Y').strftime('%Y-%m-%d')
     names = ['user_id','name', 'surname', 'father_name', 'city_id','birthday_date',
-             'direction_id','email','cover_letter', 'resume', 'university','profession_id']
+             'direction_id','email','cover_letter', 'resume', 'university','profession_id', 'username']
     sql.execute(f"""INSERT INTO forms ({", ".join(names)}) 
-    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id""",(*[data.get(i) for i in names],))
+    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id""",(*[data.get(i) for i in names],))
 
     return_id = sql.fetchone()[0]
     db.commit()
 
     sql.execute(
-        f"""SELECT f.id, f.name, f.surname, CAST(extract(years from age(now(), birthday_date)) as int) as years, d.name 
-        FROM forms as f INNER JOIN directions as d ON f.direction_id = d.id WHERE f.id = {return_id}""")
+        f"""SELECT f.id, f.name, f.surname, f.father_name, d.name, c.name, CAST(extract(years from age(now(), birthday_date)) as int) as years, status
+        FROM forms as f INNER JOIN directions as d ON f.direction_id = d.id INNER JOIN cities c on c.id = f.city_id WHERE f.id = {return_id}""")
     row = sql.fetchone()
     db.close()
 
@@ -86,8 +86,11 @@ def form_handler():
         'id': row[0],
         'name':row[1],
         'surname':row[2],
-        'years': row[3],
-        'type': row[4]
+        'father': row[3],
+        'direction': row[4],
+        'city': row[5],
+        'years': row[6],
+        'type': row[7]
     }
     socketio.emit('add-form',body)
 

@@ -56,7 +56,7 @@ def index():
             )
             db.commit()
 
-    elif request.args:
+    if request.args:
         form = request.args
         name = form.get('search')
         cities_id = tuple([int(i) for i in form.getlist('city') if i.isdigit()])
@@ -81,6 +81,8 @@ def index():
     users = sql.fetchall()
 
     if request.form.get('act-get-data'):
+        print(request.method,directions_id, cities_id)
+        print(users)
         wb = xlwt.Workbook()
         ws = wb.add_sheet(f"Анкеты")
         titles = ['ID анкеты','Фамилия','Имя','Отчество','Почта','Дата рождения', 'Полных лет','Университет','Код специальности', 'Город','Направление','Сопроводительное письмо','Ссылка на резюме','Статус']

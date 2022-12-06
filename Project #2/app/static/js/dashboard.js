@@ -3,10 +3,12 @@ window.onload = () => {
         let tbody = document.getElementsByTagName('tbody')[0]
         tbody.innerHTML = `<tr id="${data.id}" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
               <td>${data.id}</td>
-              <td>${data.name}</td>
               <td>${data.surname}</td>
+              <td>${data.name}</td>
+              <td>${data.father}</td>
               <td>${data.years}</td>
-              <td>${data.type}</td>
+              <td>${data.direction}</td>
+              <td>${data.city}</td>
               <td>Новое</td>
             </tr>` + tbody.innerHTML
 
@@ -24,7 +26,7 @@ window.onload = () => {
         $('years').innerText = `${data.date} (${data.years})`
         $('education').innerText = `${data.university}\n${data.education}`
         $('labelForm').innerText = `Анекта №${data.id}`
-        $('contacts').innerText = `Email: ${data.email}`
+        $('contacts').innerText = `Email: ${data.email}\nTelegram: ${data.username}`
         $('cover_letter').innerText = data.cover_letter
         $('form_id').value = data.id
         $('resume').src = window.location.origin + '/static/img/resume/' + `${data.resume}`

@@ -47,22 +47,26 @@ def ticket_page(id):
     sql, db = create_conn()
     if request.method == 'POST':
         data = request.json
+        sql.execute(f"SELECT user_id FROM tickets WHERE id={id} AND status!='closed'")
+        r = sql.fetchone()
         if data.get('action') == 'close-ticket':
 
             user_id = data.get('user_id')
             user_id = user_id if type(user_id)==int else 0
             sql.execute(f"UPDATE tickets SET status='closed', close_date=CURRENT_TIMESTAMP WHERE id={id} AND (admin_id={request.cookies.get('id')} OR user_id={user_id})")
             db.commit()
+            if r:
+                requests.post(url=f'https://api.telegram.org/bot{TOKEN}/sendMessage', data={'chat_id': r[0], 'text': 'Сеанс был прекращён.', 'parse_mode': "HTML"})
+
             socketio.emit('close_ticket',to=f'/tickets/{id}')
             return {'close_ticket':True},200
         else:
-            sql.execute(f"SELECT user_id FROM tickets WHERE id={id} AND status='active'")
-            r = sql.fetchone()
+
             if r:
                 sql.execute(f"INSERT INTO ticket_messages (author_id, text, ticket, author_name, author_img) VALUES (%s, %s, {id},%s,%s) ", (data.get('user_id'),data.get('text'), data.get('name'), data.get('img')))
                 db.commit()
                 if request.cookies.get('is_bot') is None:
-                    requests.post(url=f'https://api.telegram.org/bot{TOKEN}/sendMessage', data={'chat_id': r[0], 'text': data.get('text'),'parse_mode':"HTML"}).json()
+                    requests.post(url=f'https://api.telegram.org/bot{TOKEN}/sendMessage', data={'chat_id': r[0], 'text': data.get('text'),'parse_mode':"HTML"})
                 socketio.emit('new_message',{'name':data.get('name'), 'text':data.get('text'), 'avatar':data.get('img'), 'is_bot':request.cookies.get('is_bot')}, to=f'/tickets/{id}')
                 return {'active':True}, 200
             return {'active': False}, 200
