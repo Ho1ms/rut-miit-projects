@@ -81,8 +81,7 @@ def index():
     users = sql.fetchall()
 
     if request.form.get('act-get-data'):
-        print(request.method,directions_id, cities_id)
-        print(users)
+
         wb = xlwt.Workbook()
         ws = wb.add_sheet(f"Анкеты")
         titles = ['ID анкеты','Фамилия','Имя','Отчество','Почта','Дата рождения', 'Полных лет','Университет','Код специальности', 'Город','Направление','Сопроводительное письмо','Ссылка на резюме','Статус']

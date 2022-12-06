@@ -59,6 +59,8 @@ def ticket_page(id):
                 requests.post(url=f'https://api.telegram.org/bot{TOKEN}/sendMessage', data={'chat_id': r[0], 'text': 'Сеанс был прекращён.', 'parse_mode': "HTML"})
 
             socketio.emit('close_ticket',to=f'/tickets/{id}')
+
+            db.close()
             return {'close_ticket':True},200
         else:
 
@@ -68,7 +70,9 @@ def ticket_page(id):
                 if request.cookies.get('is_bot') is None:
                     requests.post(url=f'https://api.telegram.org/bot{TOKEN}/sendMessage', data={'chat_id': r[0], 'text': data.get('text'),'parse_mode':"HTML"})
                 socketio.emit('new_message',{'name':data.get('name'), 'text':data.get('text'), 'avatar':data.get('img'), 'is_bot':request.cookies.get('is_bot')}, to=f'/tickets/{id}')
+                db.close()
                 return {'active':True}, 200
+            db.close()
             return {'active': False}, 200
 
     sql.execute(f"SELECT author_id, author_name, author_img, text, to_char(date, 'HH24:MI:SS DD.MM.YYYY') FROM ticket_messages WHERE ticket={id} ORDER BY id ")
