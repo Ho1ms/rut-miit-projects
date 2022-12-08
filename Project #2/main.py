@@ -465,7 +465,7 @@ async def get_direction(e, state):
 
     await bot.send_message(
         chat_id=e.from_user.id,
-        text='Пришлите свооё резюме (файл):',
+        text='Пришлите своё резюме (файл):',
         reply_markup=keyboard.as_markup()
     )
 
