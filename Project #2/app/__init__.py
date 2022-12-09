@@ -26,6 +26,6 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 socketio = SocketIO(app,engineio_logger=True,logger=True)
 socketio.init_app(app, cors_allowed_origins="*")
 
-from . import auth_manager, profile_handler, api_handler, tickets, staff, config_handler
+from . import auth_manager, profile_handler, api_handler, tickets, staff, config_handler, manual
 
 
