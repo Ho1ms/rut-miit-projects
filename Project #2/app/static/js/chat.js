@@ -1,10 +1,4 @@
 window.onload = () => {
-	console.log('win load')
-function getCook(cookiename)
-  {
-  var cookiestring=RegExp(cookiename+"=[^;]+").exec(document.cookie);
-  return decodeURIComponent(!!cookiestring ? cookiestring.toString().replace(/^[^=]+./,"") : "");
-  }
 
 socket.on('connect', function (data) {
     socket.emit('join',
@@ -43,21 +37,8 @@ socket.on('close_ticket',function (data){
     buttons[1].disabled = true
     buttons[2].disabled = true
 })
-function close_ticket() {
-    fetch(
-        document.location.href,
-        {
-        method: "post",
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            action:'close-ticket'
-         })
-        })
-}
 
+}
 function send_message() {
 
     let text = document.getElementById('text')
@@ -83,9 +64,13 @@ function send_message() {
 
 };
 
-
-
-function getDate(dte) {
+function getCook(cookiename)
+  {
+  var cookiestring=RegExp(cookiename+"=[^;]+").exec(document.cookie);
+  return decodeURIComponent(!!cookiestring ? cookiestring.toString().replace(/^[^=]+./,"") : "");
+  }
+  
+  function getDate(dte) {
     let date = new Date(dte)
     let hour = date.getHours().toString().length === 2 ? date.getHours() : '0'+date.getHours()
     let minutes = date.getMinutes().toString().length === 2 ? date.getMinutes() : '0'+date.getMinutes()
@@ -94,4 +79,18 @@ function getDate(dte) {
     let month = date.getMonth().toString().length === 2 ? date.getMonth() + 1 : '0'+(date.getMonth()+1)
     return `${hour}:${minutes}:${seconds} ${day}.${month}.${date.getFullYear()}`
 };
+
+function close_ticket() {
+    fetch(
+        document.location.href,
+        {
+        method: "post",
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            action:'close-ticket'
+         })
+        })
 }
