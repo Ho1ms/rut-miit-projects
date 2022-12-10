@@ -1,3 +1,5 @@
+window.onload = () => {
+	console.log('win load')
 function getCook(cookiename)
   {
   var cookiestring=RegExp(cookiename+"=[^;]+").exec(document.cookie);
@@ -92,3 +94,4 @@ function getDate(dte) {
     let month = date.getMonth().toString().length === 2 ? date.getMonth() + 1 : '0'+(date.getMonth()+1)
     return `${hour}:${minutes}:${seconds} ${day}.${month}.${date.getFullYear()}`
 };
+}

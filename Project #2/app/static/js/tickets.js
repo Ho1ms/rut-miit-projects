@@ -1,3 +1,5 @@
+window.onload = function() {
+
 socket.on('new_ticket', function (data) {
     const messages = document.getElementById('tickets')
     let block = `<tr>
@@ -26,4 +28,5 @@ function getDate(dte) {
     let day = date.getDate().toString().length === 2 ? date.getDate() : '0'+date.getDate()
     let month = date.getMonth().toString().length === 2 ? date.getMonth() + 1 : '0'+(date.getMonth()+1)
     return `${hour}:${minutes}:${seconds} ${day}.${month}.${date.getFullYear()}`
+};
 };

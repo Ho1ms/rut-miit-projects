@@ -1,3 +1,4 @@
+window.onload = function() {
 const socket = io()
 
 socket.on('notify', function (data) {
@@ -23,10 +24,12 @@ function notifySet() {
     }
   }
 
-window.onload = function() {
+
   notifySet();
-};
+
 
 socket.on('connect', function (data) {
     console.log('Connected!');
 });
+
+};
