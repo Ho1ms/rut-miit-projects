@@ -30,11 +30,11 @@ def get_form():
 
     sql.execute(f"""SELECT f.id, user_id, f.name, surname, 
     father_name, c.name, CAST(extract(years from age(now(), birthday_date)) as int) as years,
-     to_char(birthday_date, 'dd.mm.YYYY') as date, d.name, email, cover_letter, resume, university, format('%s %s',b.code , b.title), username
+     to_char(birthday_date, 'dd.mm.YYYY') as date, d.name, email, cover_letter, resume, university,  b.name, username
     FROM forms as f 
     INNER JOIN directions as d ON f.direction_id = d.id 
     INNER JOIN cities as c ON c.id = f.city_id 
-    INNER JOIN profession_codes as b ON b.id = f.profession_id 
+    INNER JOIN educations as b ON b.id = f.profession_id 
     WHERE f.id = {id}""")
     row = sql.fetchone() or []
     data = {key:row[i] if i < len(row) else None for i, key in enumerate(names)}
@@ -44,7 +44,8 @@ def get_form():
 get_tables = {
     'directions':['id','name'],
     'cities':['id','name'],
-    'profession_codes':['id','code','title']
+    'profession_codes':['id','code','title'],
+    'educations':['id','name']
 }
 
 @app.route('/api/get-<table>', endpoint='get_directions')

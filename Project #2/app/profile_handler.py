@@ -77,14 +77,14 @@ def index():
     cities_id = cities_id or (0,)
     directions_id = directions_id or (0,)
 
-    sql.execute(f"""SELECT f.id, surname, f.name, f.father_name, email, birthday_date, CAST(extract(years from age(now(), birthday_date)) as int) as years, university, pc.code || ' - ' || pc.title, c.name, d.name, cover_letter, resume, f.status FROM forms as f INNER JOIN directions as d ON f.direction_id = d.id INNER JOIN cities c on c.id = f.city_id INNER JOIN profession_codes pc on pc.id = f.profession_id WHERE city_id in %s AND direction_id in %s AND status in %s AND f.surname || ' ' || f.name || ' ' || f.father_name LIKE %s ORDER BY f.id {'DESC' if order_by else 'ASC'}""",(cities_id,directions_id, statuses, f'%{name}%'))
+    sql.execute(f"""SELECT f.id, surname, f.name, f.father_name, email, birthday_date, CAST(extract(years from age(now(), birthday_date)) as int) as years, university, pc.name, c.name, d.name, cover_letter, resume, f.status FROM forms as f INNER JOIN directions as d ON f.direction_id = d.id INNER JOIN cities c on c.id = f.city_id INNER JOIN educations pc on pc.id = f.profession_id WHERE city_id in %s AND direction_id in %s AND status in %s AND f.surname || ' ' || f.name || ' ' || f.father_name LIKE %s ORDER BY f.id {'DESC' if order_by else 'ASC'}""",(cities_id,directions_id, statuses, f'%{name}%'))
     users = sql.fetchall()
 
     if request.form.get('act-get-data'):
 
         wb = xlwt.Workbook()
         ws = wb.add_sheet(f"Анкеты")
-        titles = ['ID анкеты','Фамилия','Имя','Отчество','Почта','Дата рождения', 'Полных лет','Университет','Код специальности', 'Город','Направление','Сопроводительное письмо','Ссылка на резюме','Статус']
+        titles = ['ID анкеты','Фамилия','Имя','Отчество','Почта','Дата рождения', 'Полных лет','Университет','Направление образования', 'Город','Направление','Сопроводительное письмо','Ссылка на резюме','Статус']
         for i in range(len(titles)):
             ws.write(0, i, titles[i])
 

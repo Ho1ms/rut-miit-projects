@@ -16,5 +16,5 @@ setInterval(() => {
 setTimeout(() => {
     document.getElementById("manual").scrollIntoView();
 
-}, 6000)
+}, 4900)
 };

@@ -24,13 +24,18 @@ window.onload = () => {
         $('name').innerText = `${data.name} ${data.surname} ${data.father_name}`
         $('city').innerText = `${data.city} - ${data.direction}`
         $('years').innerText = `${data.date} (${data.years})`
-        $('education').innerText = `${data.university}\n${data.education}`
+        $('education').innerText = `Место учёбы: ${data.university}\nНаправление образования: ${data.education}`
         $('labelForm').innerText = `Анекта №${data.id}`
         $('contacts').innerText = `Email: ${data.email}\nTelegram: @${data.username}`
         $('cover_letter').innerText = data.cover_letter
         $('form_id').value = data.id
-        $('resume').src = window.location.origin + '/static/img/resume/' + `${data.resume}`
-        $('resume_url').href = window.location.origin + '/static/img/resume/' + `${data.resume}`
+        if (data.resume) {
+            $('resume').src = window.location.origin + '/static/img/resume/' + `${data.resume}`
+            $('resume_url').href = window.location.origin + '/static/img/resume/' + `${data.resume}`
+        } else {
+             $('resume_url').innerText = '\nБез резюме.'
+        }
+
 
     }
 

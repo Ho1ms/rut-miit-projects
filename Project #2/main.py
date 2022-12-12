@@ -21,9 +21,27 @@ def check_date(date):
         return False
     return d < datetime.datetime.now()
 
+def gen_markup(data, _type) -> InlineKeyboardBuilder:
+    keyboard = InlineKeyboardBuilder()
+    print(data,_type)
+    for i in range(0, len(data), 2):
+        row = data[i:i + 2]
+        btns = [InlineKeyboardButton(text=row[0][1], callback_data=f'{_type}-' + str(row[0][0]))]
+
+        if len(row) > 1:
+            btns.append(InlineKeyboardButton(text=row[1][1], callback_data=f'{_type}-' + str(row[1][0])))
+
+        keyboard.row(
+            *btns
+        )
+    return keyboard
+
+
 def get_messages():
     global START_MESSAGE, CONTACT_MESSAGE, FAQ_MESSAGE, FAQ_MARKUP, \
-        FAQ_MESSAGES, MAIN_MARKUP, FORM_MESSAGE, TICKET_MESSAGE, PROFESSION_CODES, CITIES, DIRECTIONS
+        FAQ_MESSAGES, MAIN_MARKUP, FORM_MESSAGE, TICKET_MESSAGE, PROFESSION_CODES, CITIES, DIRECTIONS, \
+        education_markup, cities_markup, directions_markup
+
 
     START_MESSAGE = requests.get(f'{host}api/get-start-message', cookies=cookies).json()
     FORM_MESSAGE = requests.get(f'{host}api/get-form-message', cookies=cookies).json()
@@ -31,7 +49,7 @@ def get_messages():
     CONTACT_MESSAGE = requests.get(f'{host}api/get-contacts-message', cookies=cookies).json()
     FAQ_MESSAGE = requests.get(f'{host}api/get-faq_main-message', cookies=cookies).json()
     FAQ_MESSAGES = requests.get(f'{host}api/get-faq-messages', cookies=cookies).json()
-    PROFESSIONS = requests.get(f'{host}api/get-profession_codes', cookies=cookies).json().get('data')
+    EDUCATIONS = requests.get(f'{host}api/get-educations', cookies=cookies).json().get('data')
     CITIES = requests.get(f'{host}api/get-cities', cookies=cookies).json().get('data')
     DIRECTIONS = requests.get(f'{host}api/get-directions', cookies=cookies).json().get('data')
 
@@ -55,8 +73,9 @@ def get_messages():
 
     MAIN_MARKUP = MAIN_MARKUP.as_markup(resize_keyboard=True)
     FAQ_MARKUP = FAQ_MARKUP.as_markup()
-
-    PROFESSION_CODES = {code:id for id, code, _ in PROFESSIONS}
+    education_markup = gen_markup(EDUCATIONS, 'education')
+    cities_markup = gen_markup(CITIES, 'city')
+    directions_markup = gen_markup(DIRECTIONS, 'direction')
     print('BUTTONS LOADED')
 
 
@@ -143,12 +162,26 @@ async def form_handler(message: types.Message, state):
 @dp.callback_query(lambda e:e.data and e.data == 'create_form')
 async def create_form(event, state):
 
+    keyboard = InlineKeyboardBuilder()
+    keyboard.add(InlineKeyboardButton(text='Подтверждаю', callback_data='approval'))
+    keyboard.add(InlineKeyboardButton(text='Отмена', callback_data='cancel_form'))
+
     await bot.send_message(
         chat_id=event.from_user.id,
+        text='Даю согласие на обработку данных\n<b><a href="https://дом.рф/career/start/#conditions">✅ Согласие</a></b>',
+        reply_markup=keyboard.as_markup()
+    )
+
+    await state.set_state(FormState.APPROVAL)
+
+@dp.callback_query(lambda e: e.data and e.data == 'approval' and FormState.APPROVAL)
+async def send_name(call,state):
+    await bot.send_message(
+        chat_id=call.from_user.id,
         text="Введите имя:"
     )
-    await state.set_state(FormState.FIRST_NAME_STATE)
 
+    await state.set_state(FormState.FIRST_NAME_STATE)
 
 @dp.message(lambda message: FAQ_MESSAGE.get('title') == message.text)
 async def faq_main_handler(message: types.Message):
@@ -271,7 +304,6 @@ async def close_ticket(call, state):
 
 @dp.callback_query(lambda call: call.data and call.data.isdigit() and int(call.data) < len(FAQ_MESSAGES))
 async def faq_handler(call: types.Message):
-
     data = FAQ_MESSAGES[int(call.data)]
     text = data.get('text')
 
@@ -362,12 +394,12 @@ async def get_birthday_date(message: types.Message, state):
 
     await state.set_state(FormState.PROFESSION_STATE)
 
-    print('set prof' )
     await state.update_data(birthday_date=message.text)
 
     await bot.send_message(
         chat_id=message.from_user.id,
-        text='Введите код специальности (09.03.01):'
+        text='Направление образования:',
+        reply_markup=education_markup.as_markup()
     )
 
 
@@ -379,24 +411,17 @@ async def get_birthday_date_unknown(message: types.Message):
         text='Такой даты не существует или она в будущем!'
     )
 
-@dp.message(lambda m: m.text and re.fullmatch('\d\d.\d\d.\d\d', m.text) and m.text in PROFESSION_CODES and FormState.PROFESSION_STATE)
-async def get_profession(message: types.Message, state):
+@dp.callback_query(lambda c: c.data and c.data.startswith('education-') and FormState.PROFESSION_STATE)
+async def get_profession(call: types.Message, state):
 
     await state.set_state(FormState.UNIVERSITY_STATE)
-    await state.update_data(profession_id=PROFESSION_CODES[message.text])
+    await state.update_data(profession_id=int(call.data.split('-')[-1]))
 
     await bot.send_message(
-        chat_id=message.from_user.id,
+        chat_id=call.from_user.id,
         text='Введите название учебного заведения:'
     )
 
-@dp.message(FormState.PROFESSION_STATE)
-async def get_profession_unknown(message: types.Message):
-
-    await bot.send_message(
-        chat_id=message.from_user.id,
-        text='Не верно указана специальность.\nЕсли у вас нет высшего образования, укажите: <code>00.00.00</code>'
-    )
 
 @dp.message(FormState.UNIVERSITY_STATE)
 async def get_university(message: types.Message, state):
@@ -416,15 +441,10 @@ async def get_cover_letter(message: types.Message, state):
     await state.set_state(FormState.CITY_STATE)
     await state.update_data(cover_letter=message.text)
 
-    cities_keyboard = InlineKeyboardBuilder()
-
-    for id,city in CITIES:
-        cities_keyboard.add(InlineKeyboardButton(text=city, callback_data='city-'+str(id)))
-
     await bot.send_message(
         chat_id=message.from_user.id,
         text='Выберите город:',
-        reply_markup=cities_keyboard.as_markup()
+        reply_markup=cities_markup.as_markup()
     )
 
 
@@ -436,15 +456,10 @@ async def get_city(e, state):
     await state.set_state(FormState.DIRECTION_STATE)
     await state.update_data(city_id=id)
 
-    direction_keyboard = InlineKeyboardBuilder()
-
-    for id, name in DIRECTIONS:
-        direction_keyboard.add(InlineKeyboardButton(text=name, callback_data='direction-' + str(id)))
-
     await bot.send_message(
         chat_id=e.from_user.id,
         text='Выберите направление стажировки:',
-        reply_markup=direction_keyboard.as_markup()
+        reply_markup=directions_markup.as_markup()
     )
 
 
@@ -454,11 +469,6 @@ async def get_direction(e, state):
     id = int(e.data[10:])
     await state.set_state(FormState.RESUME_STATE)
     await state.update_data(direction_id=id)
-
-    direction_keyboard = InlineKeyboardBuilder()
-
-    for id, name in DIRECTIONS:
-        direction_keyboard.add(InlineKeyboardButton(text=name, callback_data='direction-' + str(id)))
 
     keyboard = InlineKeyboardBuilder()
     keyboard.add(InlineKeyboardButton(text='Без резюме', callback_data='skip_img'))
@@ -497,7 +507,7 @@ async def get_file(m, state):
 
     await bot.send_message(
         chat_id=m.from_user.id,
-        text='Даю согласие на обработку данных\n<b><a href="https://дом.рф/career/internship/#conditions">✅ Согласие</a></b>',
+        text='Проверьте данные анкеты и подтвердите отправку формы.',
         reply_markup=keyboard.as_markup()
     )
 
@@ -512,7 +522,7 @@ async def get_file_skip(call, state):
 
     await bot.send_message(
         chat_id=call.from_user.id,
-        text='Даю согласие на обработку данных\n<b><a href="https://дом.рф/career/internship/#conditions">✅ Согласие</a></b>',
+        text='Проверьте данные анкеты и подтвердите отправку формы.',
         reply_markup=keyboard.as_markup()
     )
 

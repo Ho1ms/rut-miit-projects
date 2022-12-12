@@ -2,6 +2,7 @@ from aiogram.dispatcher.fsm.state import State, StatesGroup
 
 class FormState(StatesGroup):
 
+    APPROVAL = State()
     FIRST_NAME_STATE = State()
     LAST_NAME_STATE = State()
     FATHER_NAME_STATE = State()
