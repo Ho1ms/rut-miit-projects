@@ -64,14 +64,38 @@ def index():
         order_by = form.get('order_by')
         statuses = tuple([i for i in form.getlist('status') if i in ('new','agreed','rejected')])
 
-    sql.execute("SELECT to_char(i, 'DD.MM'), COUNT(date) FROM generate_series( date %s,  %s, '1 day'::interval) i LEFT JOIN bot_uses b ON i = b.date GROUP BY i",(start, stop))
+    sql.execute("""with dates as (
+    SELECT i, COUNT(b.date) cnt_bot_uses
+    FROM generate_series(date %s, %s, '1 day'::interval) i
+        LEFT JOIN bot_uses b ON i = b.date
+    GROUP BY i
+    )
+SELECT to_char(i, 'DD.MM'), cnt_bot_uses, cnt_form_uses, COUNT(t.create_date)
+FROM
+    (
+        SELECT i, dates.cnt_bot_uses, COUNT(f.date_create) cnt_form_uses
+        FROM dates 
+            LEFT JOIN forms f ON CAST(f.date_create as date) = i 
+        GROUP BY i, dates.cnt_bot_uses ORDER BY i
+    ) d
+        LEFT JOIN tickets t ON CAST(t.create_date as date) = i 
+GROUP BY i, d.cnt_bot_uses,cnt_form_uses
+ORDER BY i
+""",(start, stop))
     rows = sql.fetchall()
 
-    bot_uses = [[],[]]
+    bot_uses = [
+        [], # Дата
+        [], # Взаимодействий
+        [], # Анкет
+        []  # Тикетов
+    ]
 
     for i in rows:
         bot_uses[0].append(i[0])
         bot_uses[1].append(i[1])
+        bot_uses[2].append(i[2])
+        bot_uses[3].append(i[3])
 
     statuses = statuses or ('',)
     cities_id = cities_id or (0,)

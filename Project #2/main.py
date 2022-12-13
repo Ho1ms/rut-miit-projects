@@ -23,7 +23,7 @@ def check_date(date):
 
 def gen_markup(data, _type) -> InlineKeyboardBuilder:
     keyboard = InlineKeyboardBuilder()
-    print(data,_type)
+
     for i in range(0, len(data), 2):
         row = data[i:i + 2]
         btns = [InlineKeyboardButton(text=row[0][1], callback_data=f'{_type}-' + str(row[0][0]))]

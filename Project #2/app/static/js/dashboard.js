@@ -78,19 +78,38 @@ window.onload = () => {
     }
 
     var ctx = document.getElementById('myChart')
-    // eslint-disable-next-line no-unused-vars
     var myChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: dates_titles,
             datasets: [{
-                data: dates_info,
+                data: bot_uses,
+                label:'Новых пользователей за день',
                 lineTension: 0,
+                borderJoinStyle:'bevel',
                 backgroundColor: 'transparent',
                 borderColor: '#007bff',
                 borderWidth: 4,
                 pointBackgroundColor: '#007bff'
-            }]
+            }, {
+                data: form_uses,
+                label:'Анкет за день',
+                lineTension: 0,
+                backgroundColor: 'transparent',
+                borderColor: '#f50c0c',
+                borderWidth: 4,
+                pointBackgroundColor: '#f50c0c'
+            }, {
+                data: ticket_uses,
+                label:'Тикетов за день',
+                lineTension: 0,
+                backgroundColor: 'transparent',
+                borderColor: '#11991e',
+                borderWidth: 4,
+                pointBackgroundColor: '#11991e'
+            }
+
+            ]
         },
         options: {
             scales: {
@@ -99,9 +118,6 @@ window.onload = () => {
                         beginAtZero: false
                     }
                 }]
-            },
-            legend: {
-                display: false
             }
         }
     });
