@@ -84,7 +84,7 @@ window.onload = () => {
             labels: dates_titles,
             datasets: [{
                 data: bot_uses,
-                label:'Новых пользователей за день',
+                label:'Новые пользователи',
                 lineTension: 0,
                 borderJoinStyle:'bevel',
                 backgroundColor: 'transparent',
@@ -93,7 +93,7 @@ window.onload = () => {
                 pointBackgroundColor: '#007bff'
             }, {
                 data: form_uses,
-                label:'Анкет за день',
+                label:'Анкеты',
                 lineTension: 0,
                 backgroundColor: 'transparent',
                 borderColor: '#f50c0c',
@@ -101,7 +101,7 @@ window.onload = () => {
                 pointBackgroundColor: '#f50c0c'
             }, {
                 data: ticket_uses,
-                label:'Тикетов за день',
+                label:'Тикеты',
                 lineTension: 0,
                 backgroundColor: 'transparent',
                 borderColor: '#11991e',
