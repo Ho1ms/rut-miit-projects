@@ -168,7 +168,7 @@ async def create_form(event, state):
 
     await bot.send_message(
         chat_id=event.from_user.id,
-        text='Даю согласие на обработку данных\n<b><a href="https://дом.рф/career/start/#conditions">✅ Согласие</a></b>',
+        text='Даю согласие на обработку данных\n<b><a href="https://dom.ginda.info/career/conditions">✅ Согласие</a></b>',
         reply_markup=keyboard.as_markup()
     )
 
