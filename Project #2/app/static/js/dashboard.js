@@ -30,10 +30,11 @@ window.onload = () => {
         $('cover_letter').innerText = data.cover_letter
         $('form_id').value = data.id
         if (data.resume) {
+
             $('resume').src = window.location.origin + '/static/img/resume/' + `${data.resume}`
             $('resume_url').href = window.location.origin + '/static/img/resume/' + `${data.resume}`
         } else {
-             $('resume_url').innerText = '\nБез резюме.'
+             $('resume_label').innerText = 'Резюме: Без резюме.'
         }
 
 
@@ -58,6 +59,7 @@ window.onload = () => {
         }
     })
     modalForm.addEventListener('hide.bs.modal', event => {
+        $('resume_label').innerText = 'Резюме:'
         $('name').innerText = ''
         $('city').innerText = ''
         $('years').innerText = ''
