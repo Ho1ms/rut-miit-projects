@@ -237,15 +237,27 @@ async def ticket_handler(call: types.Message, state):
 @dp.message( TicketState.CREATE )
 async def create_ticket_handler(message: types.Message, state):
     profile_pictures = await bot.get_user_profile_photos(message.from_user.id, limit=1)
-    file = await bot.get_file(profile_pictures.photos[0][-1].file_id)
-    await bot.download_file(file.file_path, os.path.join('app','static','img','avatars', f'avatar_{message.from_user.id}.jpg'))
+    avatars = profile_pictures.photos
+    if len(avatars) > 0:
+        file = await bot.get_file(avatars[0][-1].file_id)
+        await bot.download_file(file.file_path, os.path.join('app','static','img','avatars', f'avatar_{message.from_user.id}.jpg'))
+        avatar = f'avatar_{message.from_user.id}.jpg'
+    else:
+        avatar = f'unknown_user.jpg'
+
+    if message.from_user.username is not None:
+        name = message.from_user.username
+    elif message.from_user.first_name or message.from_user.last_name:
+        name = f'{message.from_user.first_name} {message.from_user.last_name}'.strip()
+    else:
+        name = 'Неопознанный пользователь'
 
     await state.set_state(TicketState.ACTIVE)
     body = {
         'user':{
-            'id':message.from_user.id,
-            'name':message.from_user.username,
-            'img': f'avatar_{message.from_user.id}.jpg',
+            'id': message.from_user.id,
+            'name': name,
+            'img': avatar,
         },
         'message':message.text
     }
